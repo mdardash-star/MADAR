@@ -1,0 +1,12 @@
+**/.git
+**/.venv
+**/__pycache__
+**/node_modules
+**/.next
+**/dist
+**/coverage
+.env
+.env.*
+.gitignore
+Dockerfile*
+README.md

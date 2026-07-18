@@ -1,0 +1,14 @@
+{
+  "name": "madar-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "docker compose up --build",
+    "build": "npm run build -w apps/web && docker compose -f docker-compose.yml build api",
+    "lint": "npm run lint -w apps/web"
+  }
+}
