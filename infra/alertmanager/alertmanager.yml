@@ -1,0 +1,66 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: "${SLACK_WEBHOOK_URL}"
+
+route:
+  group_by: ["alertname", "severity"]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: slack-default
+  routes:
+    - matchers:
+        - pager="yes"
+      receiver: pagerduty-critical
+      continue: true
+    - matchers:
+        - severity="critical"
+      receiver: slack-critical
+    - matchers:
+        - severity="high"
+      receiver: slack-high
+    - matchers:
+        - severity="medium"
+      receiver: slack-medium
+
+receivers:
+  - name: pagerduty-critical
+    pagerduty_configs:
+      - service_key: "${PAGERDUTY_SERVICE_KEY}"
+        description: "{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
+        severity: critical
+
+  - name: slack-critical
+    slack_configs:
+      - channel: "#alerts-critical"
+        title: "🚨 CRITICAL: {{ .CommonAnnotations.summary }}"
+        text: "{{ range .Alerts }}{{ .Annotations.description }}\nRunbook: {{ .Annotations.runbook }}\n{{ end }}"
+        color: "danger"
+        send_resolved: true
+
+  - name: slack-high
+    slack_configs:
+      - channel: "#alerts-high"
+        title: "⚠️ HIGH: {{ .CommonAnnotations.summary }}"
+        color: "warning"
+        send_resolved: true
+
+  - name: slack-medium
+    slack_configs:
+      - channel: "#alerts-medium"
+        title: "ℹ️ MEDIUM: {{ .CommonAnnotations.summary }}"
+        color: "good"
+        send_resolved: true
+
+  - name: slack-default
+    slack_configs:
+      - channel: "#alerts-all"
+        title: "Alert: {{ .CommonAnnotations.summary }}"
+        send_resolved: true
+
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="high"
+    equal: ["alertname"]

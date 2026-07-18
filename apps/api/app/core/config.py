@@ -21,6 +21,25 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 60
 
+    # Observability
+    sentry_dsn: str = ""
+    log_level: str = "INFO"
+    log_format: str = "json"          # "json" for prod, "console" for dev
+
+    # CORS
+    cors_origins: str = "*"           # Comma-separated list for production
+
+    # Rate limiting
+    rate_limit_enabled: bool = True
+    rate_limit_default: str = "60/minute"
+    rate_limit_auth: str = "5/minute"
+
+    # API docs
+    docs_enabled: bool = True         # Set False in production
+
+    # API workers
+    api_workers: int = 1
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -34,6 +53,14 @@ class Settings(BaseSettings):
             f"postgresql+psycopg://{self.postgres_user}:{self.postgres_password}@"
             f"{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",")]
+
+    @property
+    def is_production(self) -> bool:
+        return self.app_env == "production"
 
 
 @lru_cache()

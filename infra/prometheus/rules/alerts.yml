@@ -1,0 +1,100 @@
+groups:
+  - name: madar-critical
+    rules:
+      - alert: APIServiceDown
+        expr: up{job="madar-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          pager: "yes"
+        annotations:
+          summary: "MADAR API is DOWN"
+          description: "API has been unreachable for > 1 minute"
+
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          pager: "yes"
+        annotations:
+          summary: "PostgreSQL is DOWN"
+
+      - alert: HighErrorRate
+        expr: |
+          rate(http_requests_total{status=~"5.."}[5m]) /
+          rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          pager: "yes"
+        annotations:
+          summary: "Error rate > 5% for 2+ minutes"
+          description: "{{ $value | humanizePercentage }} error rate"
+
+      - alert: DiskAlmostFull
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.10
+        for: 5m
+        labels:
+          severity: critical
+          pager: "yes"
+        annotations:
+          summary: "Disk < 10% free"
+
+  - name: madar-high
+    rules:
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2.0
+        for: 5m
+        labels:
+          severity: high
+        annotations:
+          summary: "p95 latency > 2 seconds"
+
+      - alert: HighCPU
+        expr: |
+          100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: high
+        annotations:
+          summary: "CPU > 85% for 10+ minutes"
+
+      - alert: HighMemory
+        expr: |
+          (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.90
+        for: 5m
+        labels:
+          severity: high
+        annotations:
+          summary: "Memory > 90%"
+
+      - alert: BackupMissing
+        expr: time() - madar_backup_timestamp_seconds > 86400
+        for: 1h
+        labels:
+          severity: high
+        annotations:
+          summary: "Daily backup has not run in > 24 hours"
+
+  - name: madar-medium
+    rules:
+      - alert: DiskGrowingFast
+        expr: |
+          predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[4h], 24*3600) < 0
+        for: 30m
+        labels:
+          severity: medium
+        annotations:
+          summary: "Disk predicted full within 24 hours"
+
+      - alert: SSLCertExpiringSoon
+        expr: |
+          (probe_ssl_earliest_cert_expiry - time()) / 86400 < 14
+        for: 5m
+        labels:
+          severity: medium
+        annotations:
+          summary: "SSL certificate expires in < 14 days"
