@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.schemas.master_data import (
+    BranchCreateRequest,
+    BranchUpdateRequest,
     CurrencySettingCreateRequest,
     CurrencySettingUpdateRequest,
     CustomerCreateRequest,
@@ -364,3 +366,36 @@ def delete_product_variant(variant_id: int, db: Session = Depends(get_db)) -> di
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product variant not found")
     return {"status": "deleted", "id": str(variant_id)}
+
+
+@router.get("/branches")
+def list_branches(
+    company_id: int = Query(...),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+    search: str | None = None,
+    db: Session = Depends(get_db),
+) -> list[dict[str, Any]]:
+    return [_serialize(item) for item in MasterDataService.list_branches(db, company_id, skip, limit, search)]
+
+
+@router.post("/branches", status_code=status.HTTP_201_CREATED)
+def create_branch(payload: BranchCreateRequest, db: Session = Depends(get_db)) -> dict[str, Any]:
+    item = MasterDataService.create_branch(db, payload.model_dump())
+    return _serialize(item)
+
+
+@router.put("/branches/{branch_id}")
+def update_branch(branch_id: int, payload: BranchUpdateRequest, db: Session = Depends(get_db)) -> dict[str, Any]:
+    item = MasterDataService.update_branch(db, branch_id, payload)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
+    return _serialize(item)
+
+
+@router.delete("/branches/{branch_id}")
+def delete_branch(branch_id: int, db: Session = Depends(get_db)) -> dict[str, str]:
+    deleted = MasterDataService.delete_branch(db, branch_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
+    return {"status": "deleted", "id": str(branch_id)}

@@ -12,6 +12,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY app ./app
 COPY migrations ./migrations
 COPY alembic.ini ./alembic.ini
+COPY scripts ./scripts
 
 EXPOSE 8000
 

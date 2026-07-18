@@ -1,6 +1,25 @@
 from pydantic import BaseModel, Field
 
 
+class BranchCreateRequest(BaseModel):
+    company_id: int
+    name: str = Field(min_length=1, max_length=255)
+    code: str = Field(min_length=1, max_length=50)
+    country: str | None = None
+    city: str | None = None
+    timezone: str | None = "UTC"
+    is_active: bool = True
+
+
+class BranchUpdateRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    code: str | None = Field(default=None, min_length=1, max_length=50)
+    country: str | None = None
+    city: str | None = None
+    timezone: str | None = None
+    is_active: bool | None = None
+
+
 class DepartmentCreateRequest(BaseModel):
     company_id: int
     branch_id: int | None = None

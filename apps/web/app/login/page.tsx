@@ -3,34 +3,26 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
-import { saveToken } from '@/lib/auth';
+import { login } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('admin@madar.local');
-  const [password, setPassword] = useState('Admin123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
-
+    setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('فشل تسجيل الدخول. تحقق من البيانات.');
-      }
-
-      const data = await response.json();
-      saveToken(data.access_token);
+      await login(email, password);
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -45,28 +37,34 @@ export default function LoginPage() {
           <label className="block">
             <span className="mb-2 block text-sm">البريد الإلكتروني</span>
             <input
+              type="email"
+              required
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 outline-none ring-0"
-              placeholder="admin@madar.local"
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 outline-none focus:border-cyan-500"
+              placeholder="admin@example.com"
             />
           </label>
-
           <label className="block">
             <span className="mb-2 block text-sm">كلمة المرور</span>
             <input
               type="password"
+              required
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 outline-none ring-0"
-              placeholder="********"
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 outline-none focus:border-cyan-500"
+              placeholder="••••••••"
             />
           </label>
-
-          {error ? <p className="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{error}</p> : null}
-
-          <button className="w-full rounded-xl bg-cyan-500 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400" type="submit">
-            تسجيل الدخول
+          {error && (
+            <p className="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{error}</p>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-xl bg-cyan-500 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:opacity-60"
+          >
+            {loading ? 'جاري التحقق…' : 'تسجيل الدخول'}
           </button>
         </form>
 
@@ -80,3 +78,4 @@ export default function LoginPage() {
     </main>
   );
 }
+

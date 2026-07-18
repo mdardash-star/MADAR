@@ -10,7 +10,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class Base(DeclarativeBase):
-    pass
+    """Shared declarative base for all SQLAlchemy ORM models in MADAR."""
 
 
 def get_db() -> Generator[Session, None, None]:

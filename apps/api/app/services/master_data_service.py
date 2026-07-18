@@ -4,6 +4,7 @@ from typing import Any
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from app.models.branch import Branch
 from app.models.customer import Customer
 from app.models.currency_setting import CurrencySetting
 from app.models.department import Department
@@ -391,6 +392,43 @@ class MasterDataService:
     @staticmethod
     def delete_product_variant(db: Session, variant_id: int) -> bool:
         instance = db.query(ProductVariant).filter(ProductVariant.id == variant_id, ProductVariant.is_deleted.is_(False)).first()
+        if not instance:
+            return False
+        instance.is_deleted = True
+        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        db.commit()
+        return True
+
+    @staticmethod
+    def list_branches(db: Session, company_id: int, skip: int = 0, limit: int = 50, search: str | None = None):
+        query = db.query(Branch).filter(Branch.company_id == company_id, Branch.is_deleted.is_(False))
+        if search:
+            query = query.filter(or_(Branch.name.ilike(f"%{search}%"), Branch.code.ilike(f"%{search}%")))
+        return query.order_by(Branch.id).offset(skip).limit(limit).all()
+
+    @staticmethod
+    def create_branch(db: Session, payload: dict) -> Branch:
+        instance = Branch(**payload)
+        db.add(instance)
+        db.commit()
+        db.refresh(instance)
+        return instance
+
+    @staticmethod
+    def update_branch(db: Session, branch_id: int, payload: dict) -> Branch | None:
+        instance = db.query(Branch).filter(Branch.id == branch_id, Branch.is_deleted.is_(False)).first()
+        if not instance:
+            return None
+        for field, value in payload.items():
+            if value is not None:
+                setattr(instance, field, value)
+        db.commit()
+        db.refresh(instance)
+        return instance
+
+    @staticmethod
+    def delete_branch(db: Session, branch_id: int) -> bool:
+        instance = db.query(Branch).filter(Branch.id == branch_id, Branch.is_deleted.is_(False)).first()
         if not instance:
             return False
         instance.is_deleted = True

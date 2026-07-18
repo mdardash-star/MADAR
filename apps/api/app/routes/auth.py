@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import decode_token
 from app.dependencies.auth import get_current_token_payload
+from app.models.user import User
 from app.schemas.auth import LoginRequest, RefreshTokenRequest, TokenResponse
 from app.services.auth_service import AuthService
 
@@ -48,5 +49,20 @@ def password_reset(payload: dict[str, str]) -> dict[str, str]:
 
 
 @router.get("/me")
-def current_user(payload: dict = Depends(get_current_token_payload)) -> dict:
-    return {"sub": payload.get("sub"), "type": payload.get("type")}
+def current_user(
+    payload: dict = Depends(get_current_token_payload),
+    db: Session = Depends(get_db),
+) -> dict:
+    email = payload.get("sub")
+    user = db.query(User).filter(User.email == email, User.is_deleted.is_(False)).first()
+    if not user:
+        return {"sub": email, "type": payload.get("type")}
+    return {
+        "id": user.id,
+        "email": user.email,
+        "full_name": user.full_name,
+        "company_id": user.company_id,
+        "company_name": user.company.name if user.company else None,
+        "role_id": user.role_id,
+        "is_active": user.is_active,
+    }
