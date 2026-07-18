@@ -7,6 +7,7 @@ const cards = [
   { title: 'الفروع', value: '05' },
   { title: 'المستخدمين', value: '24' },
   { title: 'الطلبات', value: '128' },
+  { title: 'قاعدة الأعمال', value: 'Phase 4' },
 ];
 
 export default function DashboardPage() {
