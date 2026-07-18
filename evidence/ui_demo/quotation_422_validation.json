@@ -1,0 +1,204 @@
+{
+  "expected_schema": {
+    "properties": {
+      "company_id": {
+        "title": "Company Id",
+        "type": "integer"
+      },
+      "customer_id": {
+        "title": "Customer Id",
+        "type": "integer"
+      },
+      "warehouse_id": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Warehouse Id"
+      },
+      "code": {
+        "maxLength": 100,
+        "minLength": 1,
+        "title": "Code",
+        "type": "string"
+      },
+      "quote_date": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Quote Date"
+      },
+      "valid_until": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Valid Until"
+      },
+      "status": {
+        "default": "draft",
+        "title": "Status",
+        "type": "string"
+      },
+      "currency_id": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Currency Id"
+      },
+      "subtotal_amount": {
+        "minimum": 0,
+        "title": "Subtotal Amount",
+        "type": "number"
+      },
+      "tax_amount": {
+        "minimum": 0,
+        "title": "Tax Amount",
+        "type": "number"
+      },
+      "discount_amount": {
+        "minimum": 0,
+        "title": "Discount Amount",
+        "type": "number"
+      },
+      "total_amount": {
+        "minimum": 0,
+        "title": "Total Amount",
+        "type": "number"
+      },
+      "note": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Note"
+      }
+    },
+    "required": [
+      "company_id",
+      "customer_id",
+      "code",
+      "subtotal_amount",
+      "tax_amount",
+      "discount_amount",
+      "total_amount"
+    ],
+    "title": "SalesQuotationCreateRequest",
+    "type": "object"
+  },
+  "actual_payload": {
+    "customer_id": 4,
+    "quotation_number": "UIQ-044408",
+    "quotation_date": "2026-07-18",
+    "expiry_date": "",
+    "total_amount": 1500,
+    "warehouse_id": null,
+    "status": "accepted",
+    "company_id": 26
+  },
+  "pydantic_validation_output": {
+    "valid": false,
+    "errors": [
+      {
+        "type": "missing",
+        "loc": [
+          "code"
+        ],
+        "msg": "Field required",
+        "input": {
+          "customer_id": 4,
+          "quotation_number": "UIQ-044408",
+          "quotation_date": "2026-07-18",
+          "expiry_date": "",
+          "total_amount": 1500,
+          "warehouse_id": null,
+          "status": "accepted",
+          "company_id": 26
+        },
+        "url": "https://errors.pydantic.dev/2.13/v/missing"
+      },
+      {
+        "type": "missing",
+        "loc": [
+          "subtotal_amount"
+        ],
+        "msg": "Field required",
+        "input": {
+          "customer_id": 4,
+          "quotation_number": "UIQ-044408",
+          "quotation_date": "2026-07-18",
+          "expiry_date": "",
+          "total_amount": 1500,
+          "warehouse_id": null,
+          "status": "accepted",
+          "company_id": 26
+        },
+        "url": "https://errors.pydantic.dev/2.13/v/missing"
+      },
+      {
+        "type": "missing",
+        "loc": [
+          "tax_amount"
+        ],
+        "msg": "Field required",
+        "input": {
+          "customer_id": 4,
+          "quotation_number": "UIQ-044408",
+          "quotation_date": "2026-07-18",
+          "expiry_date": "",
+          "total_amount": 1500,
+          "warehouse_id": null,
+          "status": "accepted",
+          "company_id": 26
+        },
+        "url": "https://errors.pydantic.dev/2.13/v/missing"
+      },
+      {
+        "type": "missing",
+        "loc": [
+          "discount_amount"
+        ],
+        "msg": "Field required",
+        "input": {
+          "customer_id": 4,
+          "quotation_number": "UIQ-044408",
+          "quotation_date": "2026-07-18",
+          "expiry_date": "",
+          "total_amount": 1500,
+          "warehouse_id": null,
+          "status": "accepted",
+          "company_id": 26
+        },
+        "url": "https://errors.pydantic.dev/2.13/v/missing"
+      }
+    ],
+    "error_count": 4
+  }
+}

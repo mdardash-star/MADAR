@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import DateTime, Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -14,7 +14,7 @@ class SalesQuotation(Base):
     customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"), nullable=False, index=True)
     warehouse_id: Mapped[int | None] = mapped_column(ForeignKey("warehouses.id"), nullable=True, index=True)
     code: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
-    quote_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    quote_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     valid_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft")
     currency_id: Mapped[int | None] = mapped_column(ForeignKey("currency_settings.id"), nullable=True, index=True)
@@ -23,7 +23,7 @@ class SalesQuotation(Base):
     discount_amount: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     total_amount: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     note: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     is_deleted: Mapped[bool] = mapped_column(default=False, nullable=False)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

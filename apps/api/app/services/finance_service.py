@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -41,7 +41,7 @@ class FinanceService:
         if not item:
             return False
         item.is_deleted = True
-        item.deleted_at = datetime.utcnow()
+        item.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -78,6 +78,6 @@ class FinanceService:
         if not item:
             return False
         item.is_deleted = True
-        item.deleted_at = datetime.utcnow()
+        item.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True

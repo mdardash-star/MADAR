@@ -1,0 +1,5 @@
+COMMAND=cd /workspaces/MADAR/apps/api && . .venv/bin/activate && python -m pytest tests/test_release_v01.py -q
+START=2026-07-18T19:59:43+00:00
+END=2026-07-18T19:59:52+00:00
+DURATION_SECONDS=9.294
+EXIT_CODE=0

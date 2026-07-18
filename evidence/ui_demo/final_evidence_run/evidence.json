@@ -1,0 +1,177 @@
+{
+  "steps": {
+    "login": {
+      "screenshot": "/workspaces/MADAR/evidence/ui_demo/final_evidence_run/01_login.png",
+      "status": 200,
+      "body": {
+        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbkBndWxmLXRyYWRpbmcuZGVtbyIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3ODQ0MTA5NTN9.A92dE68wqFLBARudmW3cyAohYZD6MiFq-yutlHeyqCA",
+        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbkBndWxmLXRyYWRpbmcuZGVtbyIsInR5cGUiOiJyZWZyZXNoIiwiZXhwIjoxNzg1MDEyMTUzfQ.-Wz9GQWaRJ-dhiKe_-gcqltjyOY6gd2OYrwqyMQtKOg",
+        "token_type": "bearer"
+      }
+    },
+    "company": {
+      "screenshot": "/workspaces/MADAR/evidence/ui_demo/final_evidence_run/02_company_created.png",
+      "status": 200,
+      "body": {
+        "company": {
+          "id": 50,
+          "name": "UI Company 350756",
+          "slug": "ui-company-350756"
+        },
+        "admin": {
+          "id": 51,
+          "email": "admin-350756@example.com",
+          "full_name": "Admin 350756"
+        },
+        "tokens": {
+          "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbi0zNTA3NTZAZXhhbXBsZS5jb20iLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg0NDEwOTU0fQ.Mw-rYuE1RvqLPt4nub4CsiXCeZPuKeCZyr0XNEdrlr4",
+          "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbi0zNTA3NTZAZXhhbXBsZS5jb20iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4NTAxMjE1NH0.l-TBQ03r8DODnO2MPkShBmrL8eX42SrzBwkfzyrtD0Q",
+          "token_type": "bearer"
+        }
+      }
+    },
+    "customer": {
+      "screenshot": "/workspaces/MADAR/evidence/ui_demo/final_evidence_run/03_customer_created.png",
+      "status": 201,
+      "body": {
+        "name": "UI Customer 350756",
+        "id": 22,
+        "code": "UICUS-350756",
+        "phone": "",
+        "is_active": true,
+        "updated_at": "2026-07-18T20:42:35.344058Z",
+        "deleted_at": null,
+        "company_id": 50,
+        "email": "",
+        "address": "",
+        "created_at": "2026-07-18T20:42:35.344054Z",
+        "is_deleted": false
+      }
+    },
+    "supplier": {
+      "screenshot": "/workspaces/MADAR/evidence/ui_demo/final_evidence_run/04_supplier_created.png",
+      "status": 201,
+      "body": {
+        "name": "UI Supplier 350756",
+        "email": "",
+        "address": "",
+        "created_at": "2026-07-18T20:42:35.778970Z",
+        "is_deleted": false,
+        "code": "UISUP-350756",
+        "id": 18,
+        "company_id": 50,
+        "phone": "",
+        "is_active": true,
+        "updated_at": "2026-07-18T20:42:35.778974Z",
+        "deleted_at": null
+      }
+    },
+    "product": {
+      "screenshot": "/workspaces/MADAR/evidence/ui_demo/final_evidence_run/05_product_created.png",
+      "status": 201,
+      "body": {
+        "company_id": 50,
+        "id": 27,
+        "brand_id": null,
+        "name": "UI Product 350756",
+        "sku": "UISKU-350756",
+        "image_url": null,
+        "selling_price": 1500,
+        "is_active": true,
+        "updated_at": "2026-07-18T20:42:36.524567Z",
+        "deleted_at": null,
+        "category_id": 17,
+        "unit_of_measure_id": 18,
+        "barcode": null,
+        "description": null,
+        "cost_price": 1000,
+        "created_at": "2026-07-18T20:42:36.524563Z",
+        "is_deleted": false
+      }
+    },
+    "quotation": {
+      "screenshot": "/workspaces/MADAR/evidence/ui_demo/final_evidence_run/06_quotation_created.png",
+      "status": 201,
+      "body": {
+        "company_id": 50,
+        "warehouse_id": null,
+        "id": 10,
+        "valid_until": null,
+        "currency_id": null,
+        "subtotal_amount": 1500,
+        "tax_amount": 0,
+        "total_amount": 1500,
+        "created_at": "2026-07-18T20:42:37.106346Z",
+        "is_deleted": false,
+        "code": "UIQ-350756",
+        "customer_id": 22,
+        "quote_date": "2026-07-18T00:00:00Z",
+        "status": "accepted",
+        "discount_amount": 0,
+        "note": "",
+        "updated_at": "2026-07-18T20:42:37.106350Z",
+        "deleted_at": null
+      }
+    },
+    "order": {
+      "screenshot": "/workspaces/MADAR/evidence/ui_demo/final_evidence_run/07_order_created.png",
+      "status": 201,
+      "body": {
+        "code": "SO-UIQ-350756",
+        "customer_id": 22,
+        "id": 10,
+        "company_id": 50,
+        "status": "confirmed",
+        "discount_amount": 0,
+        "payment_status": "pending",
+        "created_at": "2026-07-18T20:42:37.483057Z",
+        "is_deleted": false,
+        "warehouse_id": null,
+        "order_date": "2026-07-18T00:00:00Z",
+        "currency_id": null,
+        "subtotal_amount": 1500,
+        "tax_amount": 0,
+        "total_amount": 1500,
+        "note": "Converted from quotation UIQ-350756",
+        "updated_at": "2026-07-18T20:42:37.483060Z",
+        "deleted_at": null
+      }
+    },
+    "invoice": {
+      "screenshot": "/workspaces/MADAR/evidence/ui_demo/final_evidence_run/08_invoice_created.png",
+      "status": 201,
+      "body": {
+        "currency_id": null,
+        "created_at": "2026-07-18T20:42:38.213921Z",
+        "customer_id": 22,
+        "code": "UII-350756",
+        "updated_at": "2026-07-18T20:42:38.213926Z",
+        "warehouse_id": null,
+        "tax_amount": 0,
+        "is_deleted": false,
+        "order_id": null,
+        "discount_amount": 0,
+        "deleted_at": null,
+        "id": 7,
+        "total_amount": 1500,
+        "invoice_date": "2026-07-18T00:00:00Z",
+        "subtotal_amount": 1500,
+        "payment_status": "pending",
+        "due_date": null,
+        "note": "",
+        "company_id": 50,
+        "status": "issued"
+      }
+    },
+    "dashboard": {
+      "screenshot": "/workspaces/MADAR/evidence/ui_demo/final_evidence_run/09_dashboard_updated.png",
+      "status": 200,
+      "body": {
+        "note": "dashboard loaded"
+      }
+    }
+  },
+  "consoleEntries": [],
+  "pageErrors": [],
+  "httpErrors": []
+}

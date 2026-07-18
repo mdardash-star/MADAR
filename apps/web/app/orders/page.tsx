@@ -30,11 +30,16 @@ import {
 
 const EMPTY: Omit<SalesOrder, 'id' | 'company_id'> = {
   customer_id: null,
-  order_number: '',
-  order_date: new Date().toISOString().split('T')[0],
-  total_amount: 0,
   warehouse_id: null,
+  code: '',
+  order_date: new Date().toISOString().split('T')[0],
+  subtotal_amount: 0,
+  tax_amount: 0,
+  discount_amount: 0,
+  total_amount: 0,
   status: 'draft',
+  payment_status: 'pending',
+  note: '',
 };
 
 export default function OrdersPage() {
@@ -89,11 +94,16 @@ export default function OrdersPage() {
     setEditing(row);
     setForm({
       customer_id: row.customer_id,
-      order_number: row.order_number ?? '',
-      order_date: row.order_date ?? '',
-      total_amount: row.total_amount ?? 0,
       warehouse_id: row.warehouse_id,
+      code: row.code ?? '',
+      order_date: row.order_date ?? '',
+      subtotal_amount: row.subtotal_amount ?? 0,
+      tax_amount: row.tax_amount ?? 0,
+      discount_amount: row.discount_amount ?? 0,
+      total_amount: row.total_amount ?? 0,
       status: row.status ?? 'draft',
+      payment_status: row.payment_status ?? 'pending',
+      note: row.note ?? '',
     });
     setFormError('');
     setModalOpen(true);
@@ -135,7 +145,7 @@ export default function OrdersPage() {
   }
 
   const columns = [
-    { key: 'order_number', label: 'رقم الطلب' },
+    { key: 'code', label: 'رقم الطلب' },
     {
       key: 'customer_id',
       label: 'العميل',
@@ -201,14 +211,32 @@ export default function OrdersPage() {
             />
             <Field
               label="رقم الطلب"
-              value={form.order_number ?? ''}
-              onChange={(e) => setForm((p) => ({ ...p, order_number: e.target.value }))}
+              value={form.code ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, code: e.target.value }))}
             />
             <Field
               label="تاريخ الطلب"
               type="date"
               value={form.order_date ?? ''}
               onChange={(e) => setForm((p) => ({ ...p, order_date: e.target.value }))}
+            />
+            <Field
+              label="المبلغ الفرعي"
+              type="number"
+              value={form.subtotal_amount ?? 0}
+              onChange={(e) => setForm((p) => ({ ...p, subtotal_amount: Number(e.target.value) }))}
+            />
+            <Field
+              label="الضريبة"
+              type="number"
+              value={form.tax_amount ?? 0}
+              onChange={(e) => setForm((p) => ({ ...p, tax_amount: Number(e.target.value) }))}
+            />
+            <Field
+              label="الخصم"
+              type="number"
+              value={form.discount_amount ?? 0}
+              onChange={(e) => setForm((p) => ({ ...p, discount_amount: Number(e.target.value) }))}
             />
             <Field
               label="المبلغ الإجمالي"
@@ -237,6 +265,21 @@ export default function OrdersPage() {
                 { value: 'delivered', label: 'مسلم' },
               ]}
             />
+            <SelectField
+              label="حالة الدفع"
+              value={form.payment_status ?? 'pending'}
+              onChange={(e) => setForm((p) => ({ ...p, payment_status: e.target.value }))}
+              options={[
+                { value: 'pending', label: 'معلق' },
+                { value: 'partial', label: 'جزئي' },
+                { value: 'paid', label: 'مدفوع' },
+              ]}
+            />
+            <Field
+              label="ملاحظة"
+              value={form.note ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
+            />
             {formError && <ErrorAlert message={formError} />}
           </form>
         </Modal>
@@ -244,7 +287,7 @@ export default function OrdersPage() {
 
       {deleting && (
         <DeleteConfirmModal
-          name={deleting.order_number ?? 'الطلب'}
+          name={deleting.code ?? 'الطلب'}
           onConfirm={handleDelete}
           onCancel={() => setDeleting(null)}
           loading={deleteLoading}

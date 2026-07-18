@@ -1,0 +1,11 @@
+{
+  "login": "pass",
+  "create_company": "pass",
+  "create_customer": "pass",
+  "create_supplier": "pass",
+  "create_product": "pass",
+  "create_quotation": "fail",
+  "convert_quotation": "fail",
+  "create_invoice": "fail",
+  "dashboard_kpi": "pass"
+}

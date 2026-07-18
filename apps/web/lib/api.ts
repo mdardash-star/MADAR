@@ -70,7 +70,17 @@ async function request<T>(
     let detail = `HTTP ${res.status}`;
     try {
       const body = await res.json();
-      detail = body?.detail ?? detail;
+      if (Array.isArray(body?.detail)) {
+        detail = body.detail
+          .map((item: Record<string, unknown>) => {
+            const loc = Array.isArray(item?.loc) ? item.loc.join('.') : 'body';
+            const msg = typeof item?.msg === 'string' ? item.msg : 'Validation error';
+            return `${loc}: ${msg}`;
+          })
+          .join(' | ');
+      } else {
+        detail = body?.detail ?? detail;
+      }
     } catch {}
     throw new Error(String(detail));
   }
@@ -358,12 +368,16 @@ export interface SalesQuotation {
   id: number;
   company_id: number;
   customer_id: number | null;
-  quotation_number: string | null;
-  quotation_date: string | null;
-  expiry_date: string | null;
-  total_amount: number | null;
   warehouse_id: number | null;
+  code: string | null;
+  quote_date: string | null;
+  valid_until: string | null;
+  subtotal_amount: number | null;
+  tax_amount: number | null;
+  discount_amount: number | null;
+  total_amount: number | null;
   status: string | null;
+  note: string | null;
 }
 
 export async function listQuotations(
@@ -374,7 +388,7 @@ export async function listQuotations(
   return request<SalesQuotation[]>(`/api/v1/sales/quotations?${q}`);
 }
 
-export async function createQuotation(data: Omit<SalesQuotation, 'id'> & { items?: Array<{ product_id: number; quantity: number; unit_price: number }> }) {
+export async function createQuotation(data: Omit<SalesQuotation, 'id'>) {
   return request<SalesQuotation>('/api/v1/sales/quotations', {
     method: 'POST',
     body: JSON.stringify(data),
@@ -398,11 +412,16 @@ export interface SalesOrder {
   id: number;
   company_id: number;
   customer_id: number | null;
-  order_number: string | null;
-  order_date: string | null;
-  total_amount: number | null;
   warehouse_id: number | null;
+  code: string | null;
+  order_date: string | null;
+  subtotal_amount: number | null;
+  tax_amount: number | null;
+  discount_amount: number | null;
+  total_amount: number | null;
   status: string | null;
+  payment_status: string | null;
+  note: string | null;
 }
 
 export async function listOrders(
@@ -413,7 +432,7 @@ export async function listOrders(
   return request<SalesOrder[]>(`/api/v1/sales/orders?${q}`);
 }
 
-export async function createOrder(data: Omit<SalesOrder, 'id'> & { items?: Array<{ product_id: number; quantity: number; unit_price: number }> }) {
+export async function createOrder(data: Omit<SalesOrder, 'id'>) {
   return request<SalesOrder>('/api/v1/sales/orders', {
     method: 'POST',
     body: JSON.stringify(data),
@@ -437,12 +456,18 @@ export interface SalesInvoice {
   id: number;
   company_id: number;
   customer_id: number | null;
-  invoice_number: string | null;
-  invoice_date: string | null;
-  total_amount: number | null;
   order_id: number | null;
   warehouse_id: number | null;
+  code: string | null;
+  invoice_date: string | null;
+  due_date: string | null;
+  subtotal_amount: number | null;
+  tax_amount: number | null;
+  discount_amount: number | null;
+  total_amount: number | null;
   status: string | null;
+  payment_status: string | null;
+  note: string | null;
 }
 
 export async function listInvoices(
@@ -453,7 +478,7 @@ export async function listInvoices(
   return request<SalesInvoice[]>(`/api/v1/sales/invoices?${q}`);
 }
 
-export async function createInvoice(data: Omit<SalesInvoice, 'id'> & { items?: Array<{ product_id: number; quantity: number; unit_price: number }> }) {
+export async function createInvoice(data: Omit<SalesInvoice, 'id'>) {
   return request<SalesInvoice>('/api/v1/sales/invoices', {
     method: 'POST',
     body: JSON.stringify(data),

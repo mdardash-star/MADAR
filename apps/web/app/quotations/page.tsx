@@ -20,6 +20,7 @@ import {
   createQuotation,
   updateQuotation,
   deleteQuotation,
+  createOrder,
   listCustomers,
   listWarehouses,
   getUser,
@@ -30,12 +31,16 @@ import {
 
 const EMPTY: Omit<SalesQuotation, 'id' | 'company_id'> = {
   customer_id: null,
-  quotation_number: '',
-  quotation_date: new Date().toISOString().split('T')[0],
-  expiry_date: '',
-  total_amount: 0,
   warehouse_id: null,
+  code: '',
+  quote_date: new Date().toISOString().split('T')[0],
+  valid_until: '',
+  subtotal_amount: 0,
+  tax_amount: 0,
+  discount_amount: 0,
+  total_amount: 0,
   status: 'draft',
+  note: '',
 };
 
 export default function QuotationsPage() {
@@ -81,7 +86,7 @@ export default function QuotationsPage() {
 
   function openCreate() {
     setEditing(null);
-    setForm({ ...EMPTY, quotation_date: new Date().toISOString().split('T')[0] });
+    setForm({ ...EMPTY, quote_date: new Date().toISOString().split('T')[0] });
     setFormError('');
     setModalOpen(true);
   }
@@ -90,12 +95,16 @@ export default function QuotationsPage() {
     setEditing(row);
     setForm({
       customer_id: row.customer_id,
-      quotation_number: row.quotation_number ?? '',
-      quotation_date: row.quotation_date ?? '',
-      expiry_date: row.expiry_date ?? '',
-      total_amount: row.total_amount ?? 0,
       warehouse_id: row.warehouse_id,
+      code: row.code ?? '',
+      quote_date: row.quote_date ?? '',
+      valid_until: row.valid_until ?? '',
+      subtotal_amount: row.subtotal_amount ?? 0,
+      tax_amount: row.tax_amount ?? 0,
+      discount_amount: row.discount_amount ?? 0,
+      total_amount: row.total_amount ?? 0,
       status: row.status ?? 'draft',
+      note: row.note ?? '',
     });
     setFormError('');
     setModalOpen(true);
@@ -136,8 +145,34 @@ export default function QuotationsPage() {
     }
   }
 
+  async function handleConvertToOrder(row: SalesQuotation) {
+    if (!companyId || !row.customer_id) {
+      setError('لا يمكن التحويل بدون عميل');
+      return;
+    }
+    try {
+      await createOrder({
+        company_id: companyId,
+        customer_id: row.customer_id,
+        warehouse_id: row.warehouse_id,
+        code: `SO-${row.code ?? row.id}`,
+        order_date: row.quote_date,
+        status: 'confirmed',
+        subtotal_amount: row.subtotal_amount ?? row.total_amount ?? 0,
+        tax_amount: row.tax_amount ?? 0,
+        discount_amount: row.discount_amount ?? 0,
+        total_amount: row.total_amount ?? 0,
+        payment_status: 'pending',
+        note: `Converted from quotation ${row.code ?? row.id}`,
+      });
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل تحويل العرض إلى أمر بيع');
+    }
+  }
+
   const columns = [
-    { key: 'quotation_number', label: 'رقم العرض' },
+    { key: 'code', label: 'رقم العرض' },
     {
       key: 'customer_id',
       label: 'العميل',
@@ -146,9 +181,21 @@ export default function QuotationsPage() {
         return <span>{cust?.name || '-'}</span>;
       }
     },
-    { key: 'quotation_date', label: 'التاريخ' },
+    { key: 'quote_date', label: 'التاريخ' },
     { key: 'total_amount', label: 'المبلغ' },
     { key: 'status', label: 'الحالة' },
+    {
+      key: 'convert_action',
+      label: 'تحويل',
+      render: (row: SalesQuotation) => (
+        <button
+          onClick={() => handleConvertToOrder(row)}
+          className="rounded-lg bg-amber-500/15 px-3 py-1 text-xs text-amber-300 transition hover:bg-amber-500/25"
+        >
+          تحويل إلى أمر
+        </button>
+      ),
+    },
   ];
 
   return (
@@ -203,20 +250,38 @@ export default function QuotationsPage() {
             />
             <Field
               label="رقم العرض"
-              value={form.quotation_number ?? ''}
-              onChange={(e) => setForm((p) => ({ ...p, quotation_number: e.target.value }))}
+              value={form.code ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, code: e.target.value }))}
             />
             <Field
               label="تاريخ العرض"
               type="date"
-              value={form.quotation_date ?? ''}
-              onChange={(e) => setForm((p) => ({ ...p, quotation_date: e.target.value }))}
+              value={form.quote_date ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, quote_date: e.target.value }))}
             />
             <Field
               label="تاريخ الانتهاء"
               type="date"
-              value={form.expiry_date ?? ''}
-              onChange={(e) => setForm((p) => ({ ...p, expiry_date: e.target.value }))}
+              value={form.valid_until ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, valid_until: e.target.value || null }))}
+            />
+            <Field
+              label="المبلغ الفرعي"
+              type="number"
+              value={form.subtotal_amount ?? 0}
+              onChange={(e) => setForm((p) => ({ ...p, subtotal_amount: Number(e.target.value) }))}
+            />
+            <Field
+              label="الضريبة"
+              type="number"
+              value={form.tax_amount ?? 0}
+              onChange={(e) => setForm((p) => ({ ...p, tax_amount: Number(e.target.value) }))}
+            />
+            <Field
+              label="الخصم"
+              type="number"
+              value={form.discount_amount ?? 0}
+              onChange={(e) => setForm((p) => ({ ...p, discount_amount: Number(e.target.value) }))}
             />
             <Field
               label="المبلغ الإجمالي"
@@ -244,6 +309,11 @@ export default function QuotationsPage() {
                 { value: 'rejected', label: 'مرفوض' },
               ]}
             />
+            <Field
+              label="ملاحظة"
+              value={form.note ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
+            />
             {formError && <ErrorAlert message={formError} />}
           </form>
         </Modal>
@@ -251,7 +321,7 @@ export default function QuotationsPage() {
 
       {deleting && (
         <DeleteConfirmModal
-          name={deleting.quotation_number ?? 'العرض'}
+          name={deleting.code ?? 'العرض'}
           onConfirm={handleDelete}
           onCancel={() => setDeleting(null)}
           loading={deleteLoading}

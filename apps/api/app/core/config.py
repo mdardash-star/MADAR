@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     log_format: str = "json"          # "json" for prod, "console" for dev
 
     # CORS
-    cors_origins: str = "*"           # Comma-separated list for production
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     # Rate limiting
     rate_limit_enabled: bool = True
@@ -56,7 +56,7 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",")]
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
     @property
     def is_production(self) -> bool:

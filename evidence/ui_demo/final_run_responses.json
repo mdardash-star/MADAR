@@ -1,0 +1,182 @@
+[
+  {
+    "method": "POST",
+    "url": "http://localhost:8000/auth/login",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/auth/me",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/dashboard/summary?company_id=26",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/customers?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:8000/api/v1/master-data/customers",
+    "status": 201
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/customers?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/suppliers?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:8000/api/v1/master-data/suppliers",
+    "status": 201
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/suppliers?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/units-of-measure?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/product-categories?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/products?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:8000/api/v1/master-data/product-categories",
+    "status": 201
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:8000/api/v1/master-data/units-of-measure",
+    "status": 201
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:8000/api/v1/master-data/products",
+    "status": 201
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/products?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/sales/quotations?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/warehouses?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/customers?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:8000/api/v1/sales/quotations",
+    "status": 201
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/sales/quotations?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/customers?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/warehouses?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/warehouses?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/customers?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/sales/orders?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/customers?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/warehouses?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/sales/invoices?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/sales/orders?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:8000/api/v1/sales/invoices",
+    "status": 201
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/customers?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/sales/invoices?company_id=26&limit=100",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/sales/orders?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/master-data/warehouses?company_id=26&limit=200",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:8000/api/v1/dashboard/summary?company_id=26",
+    "status": 200
+  }
+]

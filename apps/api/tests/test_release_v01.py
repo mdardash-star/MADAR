@@ -15,6 +15,7 @@ Covers every requirement for the v0.1 release gate:
 """
 
 import uuid
+import warnings
 
 import pytest
 from fastapi.testclient import TestClient
@@ -332,3 +333,70 @@ def test_assets_smoke():
     company_id, _ = _register_company()
     resp = client.get("/api/v1/assets/fixed-assets", params={"company_id": company_id})
     assert resp.status_code == 200
+
+
+def test_no_utcnow_deprecation_warning_in_crud_flows():
+    """Guard against reintroducing datetime.utcnow() in CRUD write/delete paths."""
+    company_id, _ = _register_company()
+    base = "/api/v1/master-data"
+
+    with warnings.catch_warnings(record=True) as captured:
+        warnings.simplefilter("always", DeprecationWarning)
+
+        customer = client.post(
+            f"{base}/customers",
+            json={
+                "company_id": company_id,
+                "name": "Deprecation Guard Customer",
+                "code": f"DG-CUS-{_uid()}",
+            },
+        )
+        assert customer.status_code == 201, customer.text
+        customer_id = customer.json()["id"]
+        assert client.delete(f"{base}/customers/{customer_id}").status_code == 200
+
+        supplier = client.post(
+            f"{base}/suppliers",
+            json={
+                "company_id": company_id,
+                "name": "Deprecation Guard Supplier",
+                "code": f"DG-SUP-{_uid()}",
+            },
+        )
+        assert supplier.status_code == 201, supplier.text
+        supplier_id = supplier.json()["id"]
+        assert client.delete(f"{base}/suppliers/{supplier_id}").status_code == 200
+
+        category = client.post(
+            f"{base}/product-categories",
+            json={"company_id": company_id, "name": "DG Category", "code": f"DG-CAT-{_uid()}"},
+        )
+        assert category.status_code == 201, category.text
+
+        uom = client.post(
+            f"{base}/units-of-measure",
+            json={"company_id": company_id, "name": "DG Piece", "code": f"DG-UOM-{_uid()}", "abbreviation": "pc"},
+        )
+        assert uom.status_code == 201, uom.text
+
+        product = client.post(
+            f"{base}/products",
+            json={
+                "company_id": company_id,
+                "name": "Deprecation Guard Product",
+                "sku": f"DG-SKU-{_uid()}",
+                "cost_price": 10.0,
+                "selling_price": 12.5,
+                "category_id": category.json()["id"],
+                "unit_of_measure_id": uom.json()["id"],
+            },
+        )
+        assert product.status_code == 201, product.text
+        product_id = product.json()["id"]
+        assert client.delete(f"{base}/products/{product_id}").status_code == 200
+
+    utcnow_warnings = [
+        w for w in captured
+        if issubclass(w.category, DeprecationWarning) and "utcnow" in str(w.message)
+    ]
+    assert not utcnow_warnings, [str(w.message) for w in utcnow_warnings]

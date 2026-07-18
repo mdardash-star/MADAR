@@ -1,0 +1,22 @@
+[
+  {
+    "type": "console",
+    "message": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+  },
+  {
+    "type": "step6",
+    "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n  - waiting for getByText('UIQ-682797').first() to be visible\n"
+  },
+  {
+    "type": "step7",
+    "message": "Error: No UI action found to convert quotation to sales order."
+  },
+  {
+    "type": "console",
+    "message": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+  },
+  {
+    "type": "step8",
+    "message": "TimeoutError: locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n  - waiting for getByText('UIO-682797').first() to be visible\n"
+  }
+]

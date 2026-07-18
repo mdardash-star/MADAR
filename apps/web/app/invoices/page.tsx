@@ -32,12 +32,18 @@ import {
 
 const EMPTY: Omit<SalesInvoice, 'id' | 'company_id'> = {
   customer_id: null,
-  invoice_number: '',
-  invoice_date: new Date().toISOString().split('T')[0],
-  total_amount: 0,
   order_id: null,
   warehouse_id: null,
+  code: '',
+  invoice_date: new Date().toISOString().split('T')[0],
+  due_date: null,
+  subtotal_amount: 0,
+  tax_amount: 0,
+  discount_amount: 0,
+  total_amount: 0,
   status: 'draft',
+  payment_status: 'pending',
+  note: '',
 };
 
 export default function InvoicesPage() {
@@ -95,12 +101,18 @@ export default function InvoicesPage() {
     setEditing(row);
     setForm({
       customer_id: row.customer_id,
-      invoice_number: row.invoice_number ?? '',
-      invoice_date: row.invoice_date ?? '',
-      total_amount: row.total_amount ?? 0,
       order_id: row.order_id,
       warehouse_id: row.warehouse_id,
+      code: row.code ?? '',
+      invoice_date: row.invoice_date ?? '',
+      due_date: row.due_date,
+      subtotal_amount: row.subtotal_amount ?? 0,
+      tax_amount: row.tax_amount ?? 0,
+      discount_amount: row.discount_amount ?? 0,
+      total_amount: row.total_amount ?? 0,
       status: row.status ?? 'draft',
+      payment_status: row.payment_status ?? 'pending',
+      note: row.note ?? '',
     });
     setFormError('');
     setModalOpen(true);
@@ -142,7 +154,7 @@ export default function InvoicesPage() {
   }
 
   const columns = [
-    { key: 'invoice_number', label: 'رقم الفاتورة' },
+    { key: 'code', label: 'رقم الفاتورة' },
     {
       key: 'customer_id',
       label: 'العميل',
@@ -208,14 +220,38 @@ export default function InvoicesPage() {
             />
             <Field
               label="رقم الفاتورة"
-              value={form.invoice_number ?? ''}
-              onChange={(e) => setForm((p) => ({ ...p, invoice_number: e.target.value }))}
+              value={form.code ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, code: e.target.value }))}
             />
             <Field
               label="تاريخ الفاتورة"
               type="date"
               value={form.invoice_date ?? ''}
               onChange={(e) => setForm((p) => ({ ...p, invoice_date: e.target.value }))}
+            />
+            <Field
+              label="تاريخ الاستحقاق"
+              type="date"
+              value={form.due_date ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, due_date: e.target.value || null }))}
+            />
+            <Field
+              label="المبلغ الفرعي"
+              type="number"
+              value={form.subtotal_amount ?? 0}
+              onChange={(e) => setForm((p) => ({ ...p, subtotal_amount: Number(e.target.value) }))}
+            />
+            <Field
+              label="الضريبة"
+              type="number"
+              value={form.tax_amount ?? 0}
+              onChange={(e) => setForm((p) => ({ ...p, tax_amount: Number(e.target.value) }))}
+            />
+            <Field
+              label="الخصم"
+              type="number"
+              value={form.discount_amount ?? 0}
+              onChange={(e) => setForm((p) => ({ ...p, discount_amount: Number(e.target.value) }))}
             />
             <Field
               label="المبلغ الإجمالي"
@@ -229,7 +265,7 @@ export default function InvoicesPage() {
               onChange={(e) => setForm((p) => ({ ...p, order_id: e.target.value ? Number(e.target.value) : null }))}
               options={[
                 { value: '', label: 'اختر طلب (اختياري)' },
-                ...orders.map(o => ({ value: String(o.id), label: o.order_number || `الطلب ${o.id}` }))
+                ...orders.map(o => ({ value: String(o.id), label: o.code || `الطلب ${o.id}` }))
               ]}
             />
             <SelectField
@@ -252,6 +288,21 @@ export default function InvoicesPage() {
                 { value: 'cancelled', label: 'ملغاة' },
               ]}
             />
+            <SelectField
+              label="حالة الدفع"
+              value={form.payment_status ?? 'pending'}
+              onChange={(e) => setForm((p) => ({ ...p, payment_status: e.target.value }))}
+              options={[
+                { value: 'pending', label: 'معلق' },
+                { value: 'partial', label: 'جزئي' },
+                { value: 'paid', label: 'مدفوع' },
+              ]}
+            />
+            <Field
+              label="ملاحظة"
+              value={form.note ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
+            />
             {formError && <ErrorAlert message={formError} />}
           </form>
         </Modal>
@@ -259,7 +310,7 @@ export default function InvoicesPage() {
 
       {deleting && (
         <DeleteConfirmModal
-          name={deleting.invoice_number ?? 'الفاتورة'}
+          name={deleting.code ?? 'الفاتورة'}
           onConfirm={handleDelete}
           onCancel={() => setDeleting(null)}
           loading={deleteLoading}

@@ -1,4 +1,10 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+
+def _empty_string_to_none(value: str | None) -> str | None:
+    if value == "":
+        return None
+    return value
 
 
 class SalesQuotationCreateRequest(BaseModel):
@@ -16,6 +22,8 @@ class SalesQuotationCreateRequest(BaseModel):
     total_amount: float = Field(ge=0)
     note: str | None = None
 
+    _normalize_dates = field_validator("quote_date", "valid_until", mode="before")(_empty_string_to_none)
+
 
 class SalesQuotationUpdateRequest(BaseModel):
     customer_id: int | None = None
@@ -30,6 +38,8 @@ class SalesQuotationUpdateRequest(BaseModel):
     discount_amount: float | None = Field(default=None, ge=0)
     total_amount: float | None = Field(default=None, ge=0)
     note: str | None = None
+
+    _normalize_dates = field_validator("quote_date", "valid_until", mode="before")(_empty_string_to_none)
 
 
 class SalesOrderCreateRequest(BaseModel):
@@ -47,6 +57,8 @@ class SalesOrderCreateRequest(BaseModel):
     payment_status: str = "unpaid"
     note: str | None = None
 
+    _normalize_dates = field_validator("order_date", mode="before")(_empty_string_to_none)
+
 
 class SalesOrderUpdateRequest(BaseModel):
     customer_id: int | None = None
@@ -61,6 +73,8 @@ class SalesOrderUpdateRequest(BaseModel):
     total_amount: float | None = Field(default=None, ge=0)
     payment_status: str | None = None
     note: str | None = None
+
+    _normalize_dates = field_validator("order_date", mode="before")(_empty_string_to_none)
 
 
 class SalesInvoiceCreateRequest(BaseModel):
@@ -80,6 +94,8 @@ class SalesInvoiceCreateRequest(BaseModel):
     payment_status: str = "unpaid"
     note: str | None = None
 
+    _normalize_dates = field_validator("invoice_date", "due_date", mode="before")(_empty_string_to_none)
+
 
 class SalesInvoiceUpdateRequest(BaseModel):
     customer_id: int | None = None
@@ -96,3 +112,5 @@ class SalesInvoiceUpdateRequest(BaseModel):
     total_amount: float | None = Field(default=None, ge=0)
     payment_status: str | None = None
     note: str | None = None
+
+    _normalize_dates = field_validator("invoice_date", "due_date", mode="before")(_empty_string_to_none)

@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import or_
@@ -62,7 +63,7 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -99,7 +100,7 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -136,7 +137,7 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -173,7 +174,7 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -210,7 +211,7 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -247,7 +248,7 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -284,7 +285,7 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -321,7 +322,7 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -358,7 +359,7 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -395,7 +396,7 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
 
@@ -432,6 +433,6 @@ class MasterDataService:
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = __import__("datetime").datetime.utcnow()
+        instance.deleted_at = datetime.now(timezone.utc)
         db.commit()
         return True
