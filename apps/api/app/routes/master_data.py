@@ -387,7 +387,7 @@ def create_branch(payload: BranchCreateRequest, db: Session = Depends(get_db)) -
 
 @router.put("/branches/{branch_id}")
 def update_branch(branch_id: int, payload: BranchUpdateRequest, db: Session = Depends(get_db)) -> dict[str, Any]:
-    item = MasterDataService.update_branch(db, branch_id, payload)
+    item = MasterDataService.update_branch(db, branch_id, payload.model_dump(exclude_unset=True))
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
     return _serialize(item)
