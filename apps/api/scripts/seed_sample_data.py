@@ -13,7 +13,6 @@ Or from Docker:
     docker compose exec api python scripts/seed_sample_data.py
 """
 
-import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -21,24 +20,21 @@ from pathlib import Path
 # Add the app directory to the path
 sys.path.insert(0, str(Path(__file__).parent.parent / "apps" / "api"))
 
-from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
-from app.models.company import Company
-from app.models.user import User
+from app.core.security import get_password_hash
 from app.models.branch import Branch
-from app.models.warehouse import Warehouse
+from app.models.company import Company
 from app.models.customer import Customer
-from app.models.supplier import Supplier
 from app.models.product import Product
 from app.models.product_category import ProductCategory
-from app.models.unit_of_measure import UnitOfMeasure
-from app.models.sales_quotation import SalesQuotation
-from app.models.sales_order import SalesOrder
 from app.models.sales_invoice import SalesInvoice
+from app.models.sales_order import SalesOrder
+from app.models.sales_quotation import SalesQuotation
 from app.models.stock_movement import StockMovement
-from app.models.role import Role
-from app.models.permission import Permission
-from app.core.security import get_password_hash
+from app.models.supplier import Supplier
+from app.models.unit_of_measure import UnitOfMeasure
+from app.models.user import User
+from app.models.warehouse import Warehouse
 from app.services.seed_service import SeedService
 
 
@@ -75,7 +71,7 @@ def seed_sample_data():
         print("\n🔐 Setting up Roles and Permissions...")
         SeedService.seed_initial_permissions(db)
         admin_role = SeedService.seed_initial_roles(db, company_id)
-        print(f"   ✓ Admin role configured with permissions")
+        print("   ✓ Admin role configured with permissions")
         
         # Step 3: Create Admin User
         print("\n👤 Creating Demo Admin User...")
@@ -95,18 +91,21 @@ def seed_sample_data():
             )
             db.add(admin_user)
             db.flush()
-            print(f"   ✓ Admin user created")
-            print(f"   📧 Email: admin@acme-demo.com")
-            print(f"   🔑 Password: Demo123!")
+            print("   ✓ Admin user created")
+            print("   📧 Email: admin@acme-demo.com")
+            print("   🔑 Password: Demo123!")
         else:
-            print(f"   ℹ Admin user already exists")
+            print("   ℹ Admin user already exists")
         
         # Step 4: Create Branches
         print("\n🏢 Creating Branches...")
         branches_data = [
-            {"name": "Headquarters", "code": "HQ-NYC", "country": "USA", "city": "New York", "timezone": "America/New_York"},
-            {"name": "West Coast Hub", "code": "WC-LAX", "country": "USA", "city": "Los Angeles", "timezone": "America/Los_Angeles"},
-            {"name": "East Coast Warehouse", "code": "EC-BOS", "country": "USA", "city": "Boston", "timezone": "America/New_York"},
+            {"name": "Headquarters", "code": "HQ-NYC", "country": "USA",
+             "city": "New York", "timezone": "America/New_York"},
+            {"name": "West Coast Hub", "code": "WC-LAX", "country": "USA",
+             "city": "Los Angeles", "timezone": "America/Los_Angeles"},
+            {"name": "East Coast Warehouse", "code": "EC-BOS", "country": "USA",
+             "city": "Boston", "timezone": "America/New_York"},
         ]
         
         branches = []
@@ -128,9 +127,12 @@ def seed_sample_data():
         # Step 5: Create Warehouses
         print("\n🏭 Creating Warehouses...")
         warehouse_data = [
-            {"name": "Main Warehouse", "code": "WH-001", "address": "Brooklyn, NY", "branch_id": branches[0].id},
-            {"name": "Distribution Center", "code": "WH-002", "address": "Pasadena, CA", "branch_id": branches[1].id},
-            {"name": "Regional Storage", "code": "WH-003", "address": "Quincy, MA", "branch_id": branches[2].id},
+            {"name": "Main Warehouse", "code": "WH-001",
+             "address": "Brooklyn, NY", "branch_id": branches[0].id},
+            {"name": "Distribution Center", "code": "WH-002",
+             "address": "Pasadena, CA", "branch_id": branches[1].id},
+            {"name": "Regional Storage", "code": "WH-003",
+             "address": "Quincy, MA", "branch_id": branches[2].id},
         ]
         
         warehouses = []
@@ -152,10 +154,14 @@ def seed_sample_data():
         # Step 6: Create Customers
         print("\n👥 Creating Customers...")
         customers_data = [
-            {"name": "ABC Trading Corp", "code": "CUST-001", "email": "sales@abctrading.com", "phone": "+1-555-1001"},
-            {"name": "Global Imports LLC", "code": "CUST-002", "email": "info@globalimports.com", "phone": "+1-555-1002"},
-            {"name": "Pacific Distributors", "code": "CUST-003", "email": "orders@pacificdist.com", "phone": "+1-555-1003"},
-            {"name": "Northeast Retailers", "code": "CUST-004", "email": "purchasing@nretailers.com", "phone": "+1-555-1004"},
+            {"name": "ABC Trading Corp", "code": "CUST-001",
+             "email": "sales@abctrading.com", "phone": "+1-555-1001"},
+            {"name": "Global Imports LLC", "code": "CUST-002",
+             "email": "info@globalimports.com", "phone": "+1-555-1002"},
+            {"name": "Pacific Distributors", "code": "CUST-003",
+             "email": "orders@pacificdist.com", "phone": "+1-555-1003"},
+            {"name": "Northeast Retailers", "code": "CUST-004",
+             "email": "purchasing@nretailers.com", "phone": "+1-555-1004"},
         ]
         
         customers = []
@@ -177,9 +183,12 @@ def seed_sample_data():
         # Step 7: Create Suppliers
         print("\n🤝 Creating Suppliers...")
         suppliers_data = [
-            {"name": "Global Supplies Inc", "code": "SUP-001", "email": "sales@globalsupplies.com", "phone": "+1-555-2001"},
-            {"name": "Premium Components Ltd", "code": "SUP-002", "email": "orders@premiumcomp.com", "phone": "+1-555-2002"},
-            {"name": "FastShip Logistics", "code": "SUP-003", "email": "logistics@fastship.com", "phone": "+1-555-2003"},
+            {"name": "Global Supplies Inc", "code": "SUP-001",
+             "email": "sales@globalsupplies.com", "phone": "+1-555-2001"},
+            {"name": "Premium Components Ltd", "code": "SUP-002",
+             "email": "orders@premiumcomp.com", "phone": "+1-555-2002"},
+            {"name": "FastShip Logistics", "code": "SUP-003",
+             "email": "logistics@fastship.com", "phone": "+1-555-2003"},
         ]
         
         suppliers = []
@@ -201,9 +210,12 @@ def seed_sample_data():
         # Step 8: Create Product Categories
         print("\n📦 Creating Product Categories...")
         categories_data = [
-            {"name": "Electronics", "code": "ELEC", "description": "Electronic equipment and devices"},
-            {"name": "Machinery", "code": "MACH", "description": "Industrial machinery and equipment"},
-            {"name": "Raw Materials", "code": "RAW", "description": "Raw materials for manufacturing"},
+            {"name": "Electronics", "code": "ELEC",
+             "description": "Electronic equipment and devices"},
+            {"name": "Machinery", "code": "MACH",
+             "description": "Industrial machinery and equipment"},
+            {"name": "Raw Materials", "code": "RAW",
+             "description": "Raw materials for manufacturing"},
             {"name": "Consumables", "code": "CONS", "description": "Consumable items and supplies"},
         ]
         
@@ -252,11 +264,16 @@ def seed_sample_data():
         # Step 10: Create Products
         print("\n🛍️ Creating Sample Products...")
         products_data = [
-            {"name": "Laptop Pro 15", "sku": "LAP-001", "selling_price": 1299.99, "cost_price": 800.00, "category_id": categories[0].id, "uom_id": uoms[0].id},
-            {"name": "Desktop PC", "sku": "DTP-001", "selling_price": 899.99, "cost_price": 550.00, "category_id": categories[0].id, "uom_id": uoms[0].id},
-            {"name": "Industrial Printer", "sku": "PRT-001", "selling_price": 2499.99, "cost_price": 1500.00, "category_id": categories[1].id, "uom_id": uoms[0].id},
-            {"name": "Steel Bars (100kg)", "sku": "STL-001", "selling_price": 150.00, "cost_price": 100.00, "category_id": categories[2].id, "uom_id": uoms[3].id},
-            {"name": "Adhesive Tape", "sku": "TAP-001", "selling_price": 25.00, "cost_price": 15.00, "category_id": categories[3].id, "uom_id": uoms[1].id},
+            {"name": "Laptop Pro 15", "sku": "LAP-001", "selling_price": 1299.99,
+             "cost_price": 800.00, "category_id": categories[0].id, "uom_id": uoms[0].id},
+            {"name": "Desktop PC", "sku": "DTP-001", "selling_price": 899.99,
+             "cost_price": 550.00, "category_id": categories[0].id, "uom_id": uoms[0].id},
+            {"name": "Industrial Printer", "sku": "PRT-001", "selling_price": 2499.99,
+             "cost_price": 1500.00, "category_id": categories[1].id, "uom_id": uoms[0].id},
+            {"name": "Steel Bars (100kg)", "sku": "STL-001", "selling_price": 150.00,
+             "cost_price": 100.00, "category_id": categories[2].id, "uom_id": uoms[3].id},
+            {"name": "Adhesive Tape", "sku": "TAP-001", "selling_price": 25.00,
+             "cost_price": 15.00, "category_id": categories[3].id, "uom_id": uoms[1].id},
         ]
         
         products = []
@@ -387,12 +404,12 @@ def seed_sample_data():
             db.add(movement)
         
         db.commit()
-        print(f"   ✓ Stock movements recorded")
+        print("   ✓ Stock movements recorded")
         
         print("\n" + "=" * 60)
         print("✅ SAMPLE DATA SEEDING COMPLETED SUCCESSFULLY")
         print("=" * 60)
-        print(f"\n📊 Summary:")
+        print("\n📊 Summary:")
         print(f"   Company: {demo_company.name}")
         print(f"   Branches: {len(branches)}")
         print(f"   Warehouses: {len(warehouses)}")
@@ -401,12 +418,12 @@ def seed_sample_data():
         print(f"   Products: {len(products)}")
         print(f"   Quotations: {len(quotations)}")
         print(f"   Orders: {len(orders)}")
-        print(f"\n🔐 Demo Credentials:")
-        print(f"   Email: admin@acme-demo.com")
-        print(f"   Password: Demo123!")
-        print(f"\n🌐 Access the application:")
-        print(f"   Frontend: http://localhost:3000")
-        print(f"   API Docs: http://localhost:8000/docs")
+        print("\n🔐 Demo Credentials:")
+        print("   Email: admin@acme-demo.com")
+        print("   Password: Demo123!")
+        print("\n🌐 Access the application:")
+        print("   Frontend: http://localhost:3000")
+        print("   API Docs: http://localhost:8000/docs")
         print()
         
     except Exception as e:
