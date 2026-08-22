@@ -1,11 +1,14 @@
 """
 End-to-end workflow test: 12-step user journey
-Register → Login → Branch → Warehouse → Customer → Supplier → Product → Quotation → Order → Invoice → Inventory → KPIs
+Register → Login → Branch → Warehouse → Customer → Supplier →
+Product → Quotation → Order → Invoice → Inventory → KPIs
 """
 
 import uuid
+
 import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 
@@ -225,7 +228,7 @@ def test_complete_12step_workflow(client):
         headers=headers
     )
     assert movement_resp.status_code == 201, f"Create stock movement failed: {movement_resp.text}"
-    print(f"✓ Step 11: Inventory reduced (Qty: 2 units sold)")
+    print("✓ Step 11: Inventory reduced (Qty: 2 units sold)")
     
     # Step 12: Display updated dashboard KPIs
     dashboard_resp = client.get(
@@ -236,7 +239,9 @@ def test_complete_12step_workflow(client):
     kpis = dashboard_resp.json()
     
     # Verify all KPIs
-    assert kpis['branches'] == 2, f"Expected 2 branches (1 auto Head Office + 1 manual), got {kpis['branches']}"
+    assert kpis['branches'] == 2, (
+        f"Expected 2 branches (1 auto Head Office + 1 manual), got {kpis['branches']}"
+    )
     assert kpis['warehouses'] == 1, f"Expected 1 warehouse, got {kpis['warehouses']}"
     assert kpis['customers'] == 1, f"Expected 1 customer, got {kpis['customers']}"
     assert kpis['suppliers'] == 1, f"Expected 1 supplier, got {kpis['suppliers']}"
@@ -245,8 +250,8 @@ def test_complete_12step_workflow(client):
     assert kpis['sales_orders'] == 1, f"Expected 1 sales order, got {kpis['sales_orders']}"
     assert kpis['sales_invoices'] == 1, f"Expected 1 invoice, got {kpis['sales_invoices']}"
     
-    print(f"✓ Step 12: Dashboard KPIs verified")
-    print(f"\n✓✓✓ ALL 12 STEPS COMPLETED SUCCESSFULLY ✓✓✓")
+    print("✓ Step 12: Dashboard KPIs verified")
+    print("\n✓✓✓ ALL 12 STEPS COMPLETED SUCCESSFULLY ✓✓✓")
     print(f"Final KPIs: {kpis}")
 
 

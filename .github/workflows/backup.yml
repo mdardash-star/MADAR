@@ -12,6 +12,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate required secrets
+        run: |
+          missing=()
+          [ -z "${{ secrets.PROD_HOST }}" ]     && missing+=("PROD_HOST")
+          [ -z "${{ secrets.PROD_USER }}" ]     && missing+=("PROD_USER")
+          [ -z "${{ secrets.PROD_SSH_KEY }}" ]  && missing+=("PROD_SSH_KEY")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Required secrets are not configured: ${missing[*]}"
+            echo "Please add the following secrets to the repository or 'production' environment:"
+            for s in "${missing[@]}"; do echo "  - $s"; done
+            exit 1
+          fi
+
       - name: Run database backup
         uses: appleboy/ssh-action@v1.0.3
         with:
