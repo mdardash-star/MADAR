@@ -21,7 +21,11 @@ router = APIRouter(prefix="/master-data/customers", tags=["customers"])
 
 
 def _serialize(instance: Any) -> dict[str, Any]:
-    return {key: value for key, value in instance.__dict__.items() if key != "_sa_instance_state"}
+    return {
+        key: value
+        for key, value in instance.__dict__.items()
+        if key != "_sa_instance_state"
+    }
 
 
 def _current_user(
@@ -30,14 +34,24 @@ def _current_user(
 ) -> User:
     subject = payload.get("sub")
     if not subject or not isinstance(subject, str):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    user = db.query(User).filter(
-        User.email == subject,
-        User.is_deleted.is_(False),
-        User.is_active.is_(True),
-    ).first()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
+    user = (
+        db.query(User)
+        .filter(
+            User.email == subject,
+            User.is_deleted.is_(False),
+            User.is_active.is_(True),
+        )
+        .first()
+    )
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive or unknown user")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Inactive or unknown user",
+        )
     return user
 
 
@@ -48,7 +62,10 @@ def _permission_dependency(*permissions: str) -> Callable:
             return user
         granted = {permission.codename for permission in role.permissions} if role else set()
         if not granted.intersection(permissions):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions",
+            )
         return user
 
     return dependency
@@ -61,7 +78,10 @@ delete_customer_permission = _permission_dependency("customers.delete")
 
 def _assert_company(user: User, company_id: int) -> None:
     if user.company_id != company_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer not found",
+        )
 
 
 def _bad_request(exc: ValueError) -> HTTPException:
@@ -133,7 +153,10 @@ def get_customer(
         include_archived=include_archived,
     )
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer not found",
+        )
     result = _serialize(item)
     result["contacts"] = [
         _serialize(x)
@@ -164,7 +187,10 @@ def update_customer(
     except ValueError as exc:
         raise _bad_request(exc) from exc
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer not found",
+        )
     return _serialize(item)
 
 
@@ -180,7 +206,10 @@ def archive_customer(
         customer_id,
         user.email,
     ):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer not found",
+        )
     return {"status": "archived", "id": str(customer_id)}
 
 
@@ -200,7 +229,10 @@ def restore_customer(
     except ValueError as exc:
         raise _bad_request(exc) from exc
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Archived customer not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Archived customer not found",
+        )
     return _serialize(item)
 
 
@@ -218,7 +250,10 @@ def create_contact(
         payload.model_dump(),
     )
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer not found",
+        )
     return _serialize(item)
 
 
@@ -238,7 +273,10 @@ def update_contact(
         payload.model_dump(exclude_unset=True),
     )
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Contact not found",
+        )
     return _serialize(item)
 
 
@@ -255,7 +293,10 @@ def delete_contact(
         customer_id,
         contact_id,
     ):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Contact not found",
+        )
     return {"status": "deleted", "id": str(contact_id)}
 
 
@@ -273,7 +314,10 @@ def create_address(
         payload.model_dump(),
     )
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer not found",
+        )
     return _serialize(item)
 
 
@@ -293,7 +337,10 @@ def update_address(
         payload.model_dump(exclude_unset=True),
     )
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Address not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Address not found",
+        )
     return _serialize(item)
 
 
@@ -310,5 +357,8 @@ def delete_address(
         customer_id,
         address_id,
     ):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Address not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Address not found",
+        )
     return {"status": "deleted", "id": str(address_id)}
