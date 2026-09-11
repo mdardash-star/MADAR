@@ -37,7 +37,7 @@ def _slug() -> str:
 
 
 def _register_company():
-    """Register a fresh company and return (company_id, admin_email, token)."""
+    """Register a fresh company and return (company_id, admin_email)."""
     slug = _slug()
     email = f"admin+{slug}@example.com"
     resp = client.post(
@@ -59,6 +59,10 @@ def _login(email: str, password: str = "Release2026") -> str:
     resp = client.post("/auth/login", json={"email": email, "password": password})
     assert resp.status_code == 200, f"Login failed: {resp.text}"
     return resp.json()["access_token"]
+
+
+def _auth_headers(email: str) -> dict[str, str]:
+    return {"Authorization": f"Bearer {_login(email)}"}
 
 
 # ── REQ-1  Health check ───────────────────────────────────────────────────────
@@ -144,7 +148,6 @@ def test_me_endpoint():
     resp = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert resp.status_code == 200, resp.text
     data = resp.json()
-    # The token sub is the email address
     assert data.get("sub") == email or data.get("email") == email
 
 
@@ -161,7 +164,7 @@ def test_token_refresh():
 # ── REQ-4  Dashboard (API status) ────────────────────────────────────────────
 
 def test_api_status_endpoint():
-    """GET /api/v1/status returns ok — the 'dashboard' API layer is reachable."""
+    """GET /api/v1/status returns ok — the dashboard API layer is reachable."""
     resp = client.get("/api/v1/status")
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
@@ -170,11 +173,11 @@ def test_api_status_endpoint():
 # ── REQ-5a  CRUD: Customers ───────────────────────────────────────────────────
 
 def test_customers_full_crud():
-    """Create, read, update, delete a customer."""
+    """Create, read, update, archive a customer using authenticated routes."""
     company_id, email = _register_company()
+    headers = _auth_headers(email)
     base = "/api/v1/master-data"
 
-    # Create
     create = client.post(
         f"{base}/customers",
         json={
@@ -184,26 +187,27 @@ def test_customers_full_crud():
             "email": "acme@example.com",
             "phone": "+966500000001",
         },
+        headers=headers,
     )
     assert create.status_code == 201, create.text
     cust_id = create.json()["id"]
 
-    # Read (list)
-    lst = client.get(f"{base}/customers", params={"company_id": company_id})
+    lst = client.get(f"{base}/customers", params={"company_id": company_id}, headers=headers)
     assert lst.status_code == 200
     assert any(c["id"] == cust_id for c in lst.json())
 
-    # Update
-    upd = client.put(f"{base}/customers/{cust_id}", json={"phone": "+966500000002"})
+    upd = client.put(
+        f"{base}/customers/{cust_id}",
+        json={"phone": "+966500000002"},
+        headers=headers,
+    )
     assert upd.status_code == 200
     assert upd.json()["phone"] == "+966500000002"
 
-    # Delete (soft)
-    dlt = client.delete(f"{base}/customers/{cust_id}")
+    dlt = client.delete(f"{base}/customers/{cust_id}", headers=headers)
     assert dlt.status_code == 200
 
-    # Verify deleted customer no longer appears in list
-    lst2 = client.get(f"{base}/customers", params={"company_id": company_id})
+    lst2 = client.get(f"{base}/customers", params={"company_id": company_id}, headers=headers)
     assert not any(c["id"] == cust_id for c in lst2.json())
 
 
@@ -337,7 +341,8 @@ def test_assets_smoke():
 
 def test_no_utcnow_deprecation_warning_in_crud_flows():
     """Guard against reintroducing datetime.utcnow() in CRUD write/delete paths."""
-    company_id, _ = _register_company()
+    company_id, email = _register_company()
+    headers = _auth_headers(email)
     base = "/api/v1/master-data"
 
     with warnings.catch_warnings(record=True) as captured:
@@ -350,10 +355,11 @@ def test_no_utcnow_deprecation_warning_in_crud_flows():
                 "name": "Deprecation Guard Customer",
                 "code": f"DG-CUS-{_uid()}",
             },
+            headers=headers,
         )
         assert customer.status_code == 201, customer.text
         customer_id = customer.json()["id"]
-        assert client.delete(f"{base}/customers/{customer_id}").status_code == 200
+        assert client.delete(f"{base}/customers/{customer_id}", headers=headers).status_code == 200
 
         supplier = client.post(
             f"{base}/suppliers",
