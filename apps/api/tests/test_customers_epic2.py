@@ -30,7 +30,10 @@ def _register() -> tuple[int, dict[str, str]]:
     )
     assert response.status_code == 200, response.text
     company_id = response.json()["company"]["id"]
-    login = client.post("/auth/login", json={"email": email, "password": "Customer2026!"})
+    login = client.post(
+        "/auth/login",
+        json={"email": email, "password": "Customer2026!"},
+    )
     assert login.status_code == 200, login.text
     return company_id, {"Authorization": f"Bearer {login.json()['access_token']}"}
 
@@ -57,7 +60,12 @@ def test_customers_require_authentication():
 
 def test_customer_create_detail_update_archive_restore_and_filters():
     company_id, headers = _register()
-    created = _create(company_id, headers, name="Riyadh Customer", customer_type="company")
+    created = _create(
+        company_id,
+        headers,
+        name="Riyadh Customer",
+        customer_type="company",
+    )
     assert created.status_code == 201, created.text
     customer_id = created.json()["id"]
 
@@ -77,7 +85,12 @@ def test_customer_create_detail_update_archive_restore_and_filters():
 
     searched = client.get(
         BASE,
-        params={"company_id": company_id, "search": "Riyadh", "customer_type": "company", "with_meta": True},
+        params={
+            "company_id": company_id,
+            "search": "Riyadh",
+            "customer_type": "company",
+            "with_meta": True,
+        },
         headers=headers,
     )
     assert searched.status_code == 200
@@ -95,7 +108,10 @@ def test_customer_create_detail_update_archive_restore_and_filters():
         params={"company_id": company_id, "include_archived": True},
         headers=headers,
     )
-    assert any(item["id"] == customer_id and item["is_deleted"] for item in archived_list.json())
+    assert any(
+        item["id"] == customer_id and item["is_deleted"]
+        for item in archived_list.json()
+    )
 
     restored = client.post(f"{BASE}/{customer_id}/restore", headers=headers)
     assert restored.status_code == 200
@@ -111,10 +127,20 @@ def test_company_scoped_code_and_tax_uniqueness():
     first = _create(company_a, headers_a, code=code, tax_number=tax)
     assert first.status_code == 201
 
-    duplicate_code = _create(company_a, headers_a, code=code, tax_number=f"VAT-{_uid()}")
+    duplicate_code = _create(
+        company_a,
+        headers_a,
+        code=code,
+        tax_number=f"VAT-{_uid()}",
+    )
     assert duplicate_code.status_code == 409
 
-    duplicate_tax = _create(company_a, headers_a, code=f"C-{_uid()}", tax_number=tax)
+    duplicate_tax = _create(
+        company_a,
+        headers_a,
+        code=f"C-{_uid()}",
+        tax_number=tax,
+    )
     assert duplicate_tax.status_code == 409
 
     other_tenant = _create(company_b, headers_b, code=code, tax_number=tax)
@@ -134,7 +160,11 @@ def test_tenant_isolation_hides_other_company_customers():
     wrong_detail = client.get(f"{BASE}/{customer_id}", headers=headers_b)
     assert wrong_detail.status_code == 404
 
-    wrong_update = client.put(f"{BASE}/{customer_id}", json={"name": "Compromised"}, headers=headers_b)
+    wrong_update = client.put(
+        f"{BASE}/{customer_id}",
+        json={"name": "Compromised"},
+        headers=headers_b,
+    )
     assert wrong_update.status_code == 404
 
     wrong_archive = client.delete(f"{BASE}/{customer_id}", headers=headers_b)
@@ -155,14 +185,23 @@ def test_customer_contacts_and_addresses_are_nested_and_scoped():
 
     contact = client.post(
         f"{BASE}/{customer_id}/contacts",
-        json={"full_name": "Sales Contact", "email": "sales@example.com", "is_primary": True},
+        json={
+            "full_name": "Sales Contact",
+            "email": "sales@example.com",
+            "is_primary": True,
+        },
         headers=headers_a,
     )
     assert contact.status_code == 201, contact.text
 
     address = client.post(
         f"{BASE}/{customer_id}/addresses",
-        json={"label": "HQ", "address_type": "billing", "city": "Riyadh", "is_primary": True},
+        json={
+            "label": "HQ",
+            "address_type": "billing",
+            "city": "Riyadh",
+            "is_primary": True,
+        },
         headers=headers_a,
     )
     assert address.status_code == 201, address.text
@@ -203,15 +242,25 @@ def test_customer_audit_records_create_update_and_archive():
     created = _create(company_id, headers)
     assert created.status_code == 201
     customer_id = created.json()["id"]
-    assert client.put(f"{BASE}/{customer_id}", json={"phone": "+966500000123"}, headers=headers).status_code == 200
+    update = client.put(
+        f"{BASE}/{customer_id}",
+        json={"phone": "+966500000123"},
+        headers=headers,
+    )
+    assert update.status_code == 200
     assert client.delete(f"{BASE}/{customer_id}", headers=headers).status_code == 200
 
     db = SessionLocal()
     try:
-        logs = db.query(AuditLog).filter(
-            AuditLog.entity_type == "customer",
-            AuditLog.entity_id == customer_id,
-        ).order_by(AuditLog.id).all()
+        logs = (
+            db.query(AuditLog)
+            .filter(
+                AuditLog.entity_type == "customer",
+                AuditLog.entity_id == customer_id,
+            )
+            .order_by(AuditLog.id)
+            .all()
+        )
         events = [log.event for log in logs]
         assert "customer_created" in events
         assert "customer_updated" in events
@@ -231,7 +280,12 @@ def test_pagination_metadata_and_active_filter():
 
     active = client.get(
         BASE,
-        params={"company_id": company_id, "is_active": True, "limit": 1, "with_meta": True},
+        params={
+            "company_id": company_id,
+            "is_active": True,
+            "limit": 1,
+            "with_meta": True,
+        },
         headers=headers,
     )
     assert active.status_code == 200
