@@ -40,7 +40,7 @@ async function verifyCustomersFlow(browser, viewport) {
   const customerName = `E2E Customer ${suffix}`;
   const customerCode = `E2E-${suffix}`;
   await page.getByLabel('اسم العميل *').fill(customerName);
-  await page.getByLabel('الرمز (كود) *').fill(customerCode);
+  await page.getByLabel('رمز العميل *').fill(customerCode);
   await page.getByRole('button', { name: 'إضافة العميل' }).click();
   await page.getByText(customerName).first().waitFor({ timeout: 20000 });
 
