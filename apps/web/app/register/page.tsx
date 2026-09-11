@@ -31,10 +31,16 @@ export default function RegisterCompanyPage() {
     setLoading(true);
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const payload = {
+        ...form,
+        legal_name: form.legal_name.trim() || null,
+        email: form.email.trim() || null,
+        phone: form.phone.trim() || null,
+      };
       const res = await fetch(`${API_BASE}/companies/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const body = await res.json();

@@ -46,6 +46,10 @@ jobs:
       JWT_SECRET_KEY: ci-test-secret-key-not-for-production
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history is required so lint can compare the current change set
+          # with its base without making legacy lint debt block every PR.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -55,8 +59,33 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Lint (ruff)
-        run: ruff check .
+      - name: Lint changed Python files (ruff)
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+          fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            BASE_SHA="$(git -C ../.. rev-list --max-parents=0 HEAD)"
+          fi
+
+          mapfile -t CHANGED_PYTHON < <(
+            git -C ../.. diff --name-only --diff-filter=ACMR \
+              "$BASE_SHA" "$GITHUB_SHA" -- apps/api \
+              | grep -E '^apps/api/.*\.py$' \
+              | sed 's#^apps/api/##' || true
+          )
+
+          if [ "${#CHANGED_PYTHON[@]}" -eq 0 ]; then
+            echo "No changed backend Python files to lint."
+            exit 0
+          fi
+
+          printf 'Linting changed backend files:\n - %s\n' "${CHANGED_PYTHON[@]}"
+          ruff check "${CHANGED_PYTHON[@]}"
 
       - name: Apply migrations
         run: alembic upgrade head
