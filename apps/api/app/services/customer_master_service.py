@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import or_
@@ -37,35 +37,51 @@ class CustomerMasterService:
         )
 
     @staticmethod
-    def _validate_relations(db: Session, company_id: int, payload: dict[str, Any]) -> None:
+    def _validate_relations(
+        db: Session,
+        company_id: int,
+        payload: dict[str, Any],
+    ) -> None:
         branch_id = payload.get("branch_id")
         if branch_id is not None:
-            branch = db.query(Branch).filter(
-                Branch.id == branch_id,
-                Branch.company_id == company_id,
-                Branch.is_deleted.is_(False),
-            ).first()
+            branch = (
+                db.query(Branch)
+                .filter(
+                    Branch.id == branch_id,
+                    Branch.company_id == company_id,
+                    Branch.is_deleted.is_(False),
+                )
+                .first()
+            )
             if not branch:
                 raise ValueError("Invalid branch_id for this company")
 
         group_id = payload.get("customer_group_id")
         if group_id is not None:
-            group = db.query(CustomerGroup).filter(
-                CustomerGroup.id == group_id,
-                CustomerGroup.company_id == company_id,
-                CustomerGroup.is_deleted.is_(False),
-            ).first()
+            group = (
+                db.query(CustomerGroup)
+                .filter(
+                    CustomerGroup.id == group_id,
+                    CustomerGroup.company_id == company_id,
+                    CustomerGroup.is_deleted.is_(False),
+                )
+                .first()
+            )
             if not group:
                 raise ValueError("Invalid customer_group_id for this company")
 
         owner_id = payload.get("sales_owner_id")
         if owner_id is not None:
-            owner = db.query(User).filter(
-                User.id == owner_id,
-                User.company_id == company_id,
-                User.is_deleted.is_(False),
-                User.is_active.is_(True),
-            ).first()
+            owner = (
+                db.query(User)
+                .filter(
+                    User.id == owner_id,
+                    User.company_id == company_id,
+                    User.is_deleted.is_(False),
+                    User.is_active.is_(True),
+                )
+                .first()
+            )
             if not owner:
                 raise ValueError("Invalid sales_owner_id for this company")
 
@@ -79,7 +95,10 @@ class CustomerMasterService:
         exclude_customer_id: int | None = None,
     ) -> None:
         if code:
-            query = db.query(Customer).filter(Customer.company_id == company_id, Customer.code == code)
+            query = db.query(Customer).filter(
+                Customer.company_id == company_id,
+                Customer.code == code,
+            )
             if exclude_customer_id is not None:
                 query = query.filter(Customer.id != exclude_customer_id)
             if query.first():
@@ -129,8 +148,16 @@ class CustomerMasterService:
         return query.order_by(Customer.id.desc()).offset(skip).limit(limit).all(), total
 
     @staticmethod
-    def get_customer(db: Session, company_id: int, customer_id: int, include_archived: bool = False) -> Customer | None:
-        query = db.query(Customer).filter(Customer.id == customer_id, Customer.company_id == company_id)
+    def get_customer(
+        db: Session,
+        company_id: int,
+        customer_id: int,
+        include_archived: bool = False,
+    ) -> Customer | None:
+        query = db.query(Customer).filter(
+            Customer.id == customer_id,
+            Customer.company_id == company_id,
+        )
         if not include_archived:
             query = query.filter(Customer.is_deleted.is_(False))
         return query.first()
@@ -144,12 +171,23 @@ class CustomerMasterService:
         user_email: str,
     ) -> Customer:
         cls._validate_relations(db, company_id, payload)
-        cls._validate_uniques(db, company_id, code=payload.get("code"), tax_number=payload.get("tax_number"))
+        cls._validate_uniques(
+            db,
+            company_id,
+            code=payload.get("code"),
+            tax_number=payload.get("tax_number"),
+        )
         data = {**payload, "company_id": company_id}
         instance = Customer(**data)
         db.add(instance)
         db.flush()
-        cls._audit(db, company_id=company_id, user_email=user_email, event="customer_created", entity_id=instance.id)
+        cls._audit(
+            db,
+            company_id=company_id,
+            user_email=user_email,
+            event="customer_created",
+            entity_id=instance.id,
+        )
         db.commit()
         db.refresh(instance)
         return instance
@@ -193,39 +231,89 @@ class CustomerMasterService:
         return instance
 
     @classmethod
-    def archive_customer(cls, db: Session, company_id: int, customer_id: int, user_email: str) -> bool:
+    def archive_customer(
+        cls,
+        db: Session,
+        company_id: int,
+        customer_id: int,
+        user_email: str,
+    ) -> bool:
         instance = cls.get_customer(db, company_id, customer_id)
         if not instance:
             return False
         instance.is_deleted = True
-        instance.deleted_at = datetime.now(timezone.utc)
-        cls._audit(db, company_id=company_id, user_email=user_email, event="customer_archived", entity_id=instance.id)
+        instance.deleted_at = datetime.now(UTC)
+        cls._audit(
+            db,
+            company_id=company_id,
+            user_email=user_email,
+            event="customer_archived",
+            entity_id=instance.id,
+        )
         db.commit()
         return True
 
     @classmethod
-    def restore_customer(cls, db: Session, company_id: int, customer_id: int, user_email: str) -> Customer | None:
-        instance = cls.get_customer(db, company_id, customer_id, include_archived=True)
+    def restore_customer(
+        cls,
+        db: Session,
+        company_id: int,
+        customer_id: int,
+        user_email: str,
+    ) -> Customer | None:
+        instance = cls.get_customer(
+            db,
+            company_id,
+            customer_id,
+            include_archived=True,
+        )
         if not instance or not instance.is_deleted:
             return None
-        cls._validate_uniques(db, company_id, code=instance.code, tax_number=instance.tax_number, exclude_customer_id=instance.id)
+        cls._validate_uniques(
+            db,
+            company_id,
+            code=instance.code,
+            tax_number=instance.tax_number,
+            exclude_customer_id=instance.id,
+        )
         instance.is_deleted = False
         instance.deleted_at = None
-        cls._audit(db, company_id=company_id, user_email=user_email, event="customer_restored", entity_id=instance.id)
+        cls._audit(
+            db,
+            company_id=company_id,
+            user_email=user_email,
+            event="customer_restored",
+            entity_id=instance.id,
+        )
         db.commit()
         db.refresh(instance)
         return instance
 
     @staticmethod
-    def list_contacts(db: Session, company_id: int, customer_id: int) -> list[CustomerContact]:
-        return db.query(CustomerContact).filter(
-            CustomerContact.company_id == company_id,
-            CustomerContact.customer_id == customer_id,
-            CustomerContact.is_deleted.is_(False),
-        ).order_by(CustomerContact.is_primary.desc(), CustomerContact.id).all()
+    def list_contacts(
+        db: Session,
+        company_id: int,
+        customer_id: int,
+    ) -> list[CustomerContact]:
+        return (
+            db.query(CustomerContact)
+            .filter(
+                CustomerContact.company_id == company_id,
+                CustomerContact.customer_id == customer_id,
+                CustomerContact.is_deleted.is_(False),
+            )
+            .order_by(CustomerContact.is_primary.desc(), CustomerContact.id)
+            .all()
+        )
 
     @classmethod
-    def create_contact(cls, db: Session, company_id: int, customer_id: int, payload: dict[str, Any]) -> CustomerContact | None:
+    def create_contact(
+        cls,
+        db: Session,
+        company_id: int,
+        customer_id: int,
+        payload: dict[str, Any],
+    ) -> CustomerContact | None:
         if not cls.get_customer(db, company_id, customer_id):
             return None
         if payload.get("is_primary"):
@@ -241,13 +329,24 @@ class CustomerMasterService:
         return item
 
     @classmethod
-    def update_contact(cls, db: Session, company_id: int, customer_id: int, contact_id: int, payload: dict[str, Any]) -> CustomerContact | None:
-        item = db.query(CustomerContact).filter(
-            CustomerContact.id == contact_id,
-            CustomerContact.company_id == company_id,
-            CustomerContact.customer_id == customer_id,
-            CustomerContact.is_deleted.is_(False),
-        ).first()
+    def update_contact(
+        cls,
+        db: Session,
+        company_id: int,
+        customer_id: int,
+        contact_id: int,
+        payload: dict[str, Any],
+    ) -> CustomerContact | None:
+        item = (
+            db.query(CustomerContact)
+            .filter(
+                CustomerContact.id == contact_id,
+                CustomerContact.company_id == company_id,
+                CustomerContact.customer_id == customer_id,
+                CustomerContact.is_deleted.is_(False),
+            )
+            .first()
+        )
         if not item:
             return None
         if payload.get("is_primary"):
@@ -264,30 +363,54 @@ class CustomerMasterService:
         return item
 
     @staticmethod
-    def delete_contact(db: Session, company_id: int, customer_id: int, contact_id: int) -> bool:
-        item = db.query(CustomerContact).filter(
-            CustomerContact.id == contact_id,
-            CustomerContact.company_id == company_id,
-            CustomerContact.customer_id == customer_id,
-            CustomerContact.is_deleted.is_(False),
-        ).first()
+    def delete_contact(
+        db: Session,
+        company_id: int,
+        customer_id: int,
+        contact_id: int,
+    ) -> bool:
+        item = (
+            db.query(CustomerContact)
+            .filter(
+                CustomerContact.id == contact_id,
+                CustomerContact.company_id == company_id,
+                CustomerContact.customer_id == customer_id,
+                CustomerContact.is_deleted.is_(False),
+            )
+            .first()
+        )
         if not item:
             return False
         item.is_deleted = True
-        item.deleted_at = datetime.now(timezone.utc)
+        item.deleted_at = datetime.now(UTC)
         db.commit()
         return True
 
     @staticmethod
-    def list_addresses(db: Session, company_id: int, customer_id: int) -> list[CustomerAddress]:
-        return db.query(CustomerAddress).filter(
-            CustomerAddress.company_id == company_id,
-            CustomerAddress.customer_id == customer_id,
-            CustomerAddress.is_deleted.is_(False),
-        ).order_by(CustomerAddress.is_primary.desc(), CustomerAddress.id).all()
+    def list_addresses(
+        db: Session,
+        company_id: int,
+        customer_id: int,
+    ) -> list[CustomerAddress]:
+        return (
+            db.query(CustomerAddress)
+            .filter(
+                CustomerAddress.company_id == company_id,
+                CustomerAddress.customer_id == customer_id,
+                CustomerAddress.is_deleted.is_(False),
+            )
+            .order_by(CustomerAddress.is_primary.desc(), CustomerAddress.id)
+            .all()
+        )
 
     @classmethod
-    def create_address(cls, db: Session, company_id: int, customer_id: int, payload: dict[str, Any]) -> CustomerAddress | None:
+    def create_address(
+        cls,
+        db: Session,
+        company_id: int,
+        customer_id: int,
+        payload: dict[str, Any],
+    ) -> CustomerAddress | None:
         if not cls.get_customer(db, company_id, customer_id):
             return None
         if payload.get("is_primary"):
@@ -303,13 +426,24 @@ class CustomerMasterService:
         return item
 
     @classmethod
-    def update_address(cls, db: Session, company_id: int, customer_id: int, address_id: int, payload: dict[str, Any]) -> CustomerAddress | None:
-        item = db.query(CustomerAddress).filter(
-            CustomerAddress.id == address_id,
-            CustomerAddress.company_id == company_id,
-            CustomerAddress.customer_id == customer_id,
-            CustomerAddress.is_deleted.is_(False),
-        ).first()
+    def update_address(
+        cls,
+        db: Session,
+        company_id: int,
+        customer_id: int,
+        address_id: int,
+        payload: dict[str, Any],
+    ) -> CustomerAddress | None:
+        item = (
+            db.query(CustomerAddress)
+            .filter(
+                CustomerAddress.id == address_id,
+                CustomerAddress.company_id == company_id,
+                CustomerAddress.customer_id == customer_id,
+                CustomerAddress.is_deleted.is_(False),
+            )
+            .first()
+        )
         if not item:
             return None
         if payload.get("is_primary"):
@@ -326,16 +460,25 @@ class CustomerMasterService:
         return item
 
     @staticmethod
-    def delete_address(db: Session, company_id: int, customer_id: int, address_id: int) -> bool:
-        item = db.query(CustomerAddress).filter(
-            CustomerAddress.id == address_id,
-            CustomerAddress.company_id == company_id,
-            CustomerAddress.customer_id == customer_id,
-            CustomerAddress.is_deleted.is_(False),
-        ).first()
+    def delete_address(
+        db: Session,
+        company_id: int,
+        customer_id: int,
+        address_id: int,
+    ) -> bool:
+        item = (
+            db.query(CustomerAddress)
+            .filter(
+                CustomerAddress.id == address_id,
+                CustomerAddress.company_id == company_id,
+                CustomerAddress.customer_id == customer_id,
+                CustomerAddress.is_deleted.is_(False),
+            )
+            .first()
+        )
         if not item:
             return False
         item.is_deleted = True
-        item.deleted_at = datetime.now(timezone.utc)
+        item.deleted_at = datetime.now(UTC)
         db.commit()
         return True
