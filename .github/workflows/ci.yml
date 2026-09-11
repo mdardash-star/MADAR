@@ -69,13 +69,14 @@ jobs:
           fi
 
           if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
-            BASE_SHA="$(git rev-list --max-parents=0 HEAD)"
+            BASE_SHA="$(git -C ../.. rev-list --max-parents=0 HEAD)"
           fi
 
           mapfile -t CHANGED_PYTHON < <(
-            git diff --name-only --diff-filter=ACMR --relative=apps/api \
+            git -C ../.. diff --name-only --diff-filter=ACMR \
               "$BASE_SHA" "$GITHUB_SHA" -- apps/api \
-              | grep -E '\.py$' || true
+              | grep -E '^apps/api/.*\.py$' \
+              | sed 's#^apps/api/##' || true
           )
 
           if [ "${#CHANGED_PYTHON[@]}" -eq 0 ]; then
