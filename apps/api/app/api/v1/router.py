@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.routes.assets import router as assets_router
 from app.routes.crm import router as crm_router
 from app.routes.business_foundation import router as business_foundation_router
+from app.routes.customers import router as customers_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.finance import router as finance_router
 from app.routes.hr import router as hr_router
@@ -15,6 +16,9 @@ from app.routes.sales import router as sales_router
 router = APIRouter(prefix="/api/v1")
 router.include_router(me_router)
 router.include_router(dashboard_router)
+# Register secure customer routes before the legacy master-data router so the
+# customer paths resolve to the tenant-scoped implementation.
+router.include_router(customers_router)
 router.include_router(master_data_router)
 router.include_router(business_foundation_router)
 router.include_router(sales_router)
