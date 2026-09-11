@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
 from app.routes.assets import router as assets_router
-from app.routes.crm import router as crm_router
 from app.routes.business_foundation import router as business_foundation_router
+from app.routes.crm import router as crm_router
 from app.routes.customers import router as customers_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.finance import router as finance_router
