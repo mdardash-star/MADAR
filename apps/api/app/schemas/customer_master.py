@@ -2,7 +2,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-
 CustomerType = Literal["company", "individual"]
 AddressType = Literal["billing", "shipping", "other"]
 
