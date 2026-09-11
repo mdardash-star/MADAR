@@ -50,7 +50,8 @@ async function verifyCustomersFlow(browser, viewport) {
 
   await page.getByRole('button', { name: 'تفاصيل' }).first().click();
   await page.getByText(customerName).first().waitFor({ timeout: 10000 });
-  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: '✕' }).click();
+  await page.getByRole('button', { name: 'أرشفة' }).first().waitFor({ state: 'visible' });
 
   page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'أرشفة' }).first().click();
