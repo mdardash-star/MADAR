@@ -225,6 +225,59 @@ def test_customer_contacts_and_addresses_are_nested_and_scoped():
     assert cross_address.status_code == 404
 
 
+def test_required_update_fields_reject_explicit_nulls():
+    company_id, headers = _register()
+    created = _create(company_id, headers)
+    assert created.status_code == 201
+    customer_id = created.json()["id"]
+
+    for payload in (
+        {"name": None},
+        {"code": None},
+        {"customer_type": None},
+        {"credit_limit": None},
+        {"payment_terms_days": None},
+        {"is_active": None},
+    ):
+        response = client.put(f"{BASE}/{customer_id}", json=payload, headers=headers)
+        assert response.status_code == 422, (payload, response.text)
+
+    contact = client.post(
+        f"{BASE}/{customer_id}/contacts",
+        json={"full_name": "Primary Contact", "is_primary": True},
+        headers=headers,
+    )
+    assert contact.status_code == 201
+    contact_id = contact.json()["id"]
+    for payload in ({"full_name": None}, {"is_primary": None}, {"is_active": None}):
+        response = client.put(
+            f"{BASE}/{customer_id}/contacts/{contact_id}",
+            json=payload,
+            headers=headers,
+        )
+        assert response.status_code == 422, (payload, response.text)
+
+    address = client.post(
+        f"{BASE}/{customer_id}/addresses",
+        json={"label": "HQ", "address_type": "billing", "is_primary": True},
+        headers=headers,
+    )
+    assert address.status_code == 201
+    address_id = address.json()["id"]
+    for payload in (
+        {"label": None},
+        {"address_type": None},
+        {"is_primary": None},
+        {"is_active": None},
+    ):
+        response = client.put(
+            f"{BASE}/{customer_id}/addresses/{address_id}",
+            json=payload,
+            headers=headers,
+        )
+        assert response.status_code == 422, (payload, response.text)
+
+
 def test_invalid_relation_ids_and_negative_financial_values_are_rejected():
     company_id, headers = _register()
     invalid_relation = _create(company_id, headers, branch_id=999999999)
