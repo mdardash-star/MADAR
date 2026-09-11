@@ -1,4 +1,5 @@
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
@@ -125,12 +126,23 @@ def get_customer(
     db: Session = Depends(get_db),
     user: User = Depends(read_customer),
 ) -> dict[str, Any]:
-    item = CustomerMasterService.get_customer(db, user.company_id, customer_id, include_archived=include_archived)
+    item = CustomerMasterService.get_customer(
+        db,
+        user.company_id,
+        customer_id,
+        include_archived=include_archived,
+    )
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
     result = _serialize(item)
-    result["contacts"] = [_serialize(x) for x in CustomerMasterService.list_contacts(db, user.company_id, customer_id)]
-    result["addresses"] = [_serialize(x) for x in CustomerMasterService.list_addresses(db, user.company_id, customer_id)]
+    result["contacts"] = [
+        _serialize(x)
+        for x in CustomerMasterService.list_contacts(db, user.company_id, customer_id)
+    ]
+    result["addresses"] = [
+        _serialize(x)
+        for x in CustomerMasterService.list_addresses(db, user.company_id, customer_id)
+    ]
     return result
 
 
@@ -162,7 +174,12 @@ def archive_customer(
     db: Session = Depends(get_db),
     user: User = Depends(delete_customer_permission),
 ) -> dict[str, str]:
-    if not CustomerMasterService.archive_customer(db, user.company_id, customer_id, user.email):
+    if not CustomerMasterService.archive_customer(
+        db,
+        user.company_id,
+        customer_id,
+        user.email,
+    ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
     return {"status": "archived", "id": str(customer_id)}
 
@@ -174,7 +191,12 @@ def restore_customer(
     user: User = Depends(write_customer),
 ) -> dict[str, Any]:
     try:
-        item = CustomerMasterService.restore_customer(db, user.company_id, customer_id, user.email)
+        item = CustomerMasterService.restore_customer(
+            db,
+            user.company_id,
+            customer_id,
+            user.email,
+        )
     except ValueError as exc:
         raise _bad_request(exc) from exc
     if not item:
@@ -189,7 +211,12 @@ def create_contact(
     db: Session = Depends(get_db),
     user: User = Depends(write_customer),
 ) -> dict[str, Any]:
-    item = CustomerMasterService.create_contact(db, user.company_id, customer_id, payload.model_dump())
+    item = CustomerMasterService.create_contact(
+        db,
+        user.company_id,
+        customer_id,
+        payload.model_dump(),
+    )
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
     return _serialize(item)
@@ -222,7 +249,12 @@ def delete_contact(
     db: Session = Depends(get_db),
     user: User = Depends(write_customer),
 ) -> dict[str, str]:
-    if not CustomerMasterService.delete_contact(db, user.company_id, customer_id, contact_id):
+    if not CustomerMasterService.delete_contact(
+        db,
+        user.company_id,
+        customer_id,
+        contact_id,
+    ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
     return {"status": "deleted", "id": str(contact_id)}
 
@@ -234,7 +266,12 @@ def create_address(
     db: Session = Depends(get_db),
     user: User = Depends(write_customer),
 ) -> dict[str, Any]:
-    item = CustomerMasterService.create_address(db, user.company_id, customer_id, payload.model_dump())
+    item = CustomerMasterService.create_address(
+        db,
+        user.company_id,
+        customer_id,
+        payload.model_dump(),
+    )
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
     return _serialize(item)
@@ -267,6 +304,11 @@ def delete_address(
     db: Session = Depends(get_db),
     user: User = Depends(write_customer),
 ) -> dict[str, str]:
-    if not CustomerMasterService.delete_address(db, user.company_id, customer_id, address_id):
+    if not CustomerMasterService.delete_address(
+        db,
+        user.company_id,
+        customer_id,
+        address_id,
+    ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Address not found")
     return {"status": "deleted", "id": str(address_id)}
