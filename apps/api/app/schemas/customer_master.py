@@ -1,6 +1,6 @@
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 CustomerType = Literal["company", "individual"]
 AddressType = Literal["billing", "shipping", "other"]
@@ -40,6 +40,25 @@ class CustomerUpdate(BaseModel):
     notes: str | None = Field(default=None, max_length=1000)
     is_active: bool | None = None
 
+    @model_validator(mode="after")
+    def required_fields_cannot_be_null(self) -> Self:
+        required = {
+            "name",
+            "code",
+            "customer_type",
+            "credit_limit",
+            "payment_terms_days",
+            "is_active",
+        }
+        invalid = sorted(
+            field
+            for field in required.intersection(self.model_fields_set)
+            if getattr(self, field) is None
+        )
+        if invalid:
+            raise ValueError(f"Fields cannot be null: {', '.join(invalid)}")
+        return self
+
 
 class ContactCreate(BaseModel):
     full_name: str = Field(min_length=1, max_length=255)
@@ -57,6 +76,18 @@ class ContactUpdate(BaseModel):
     phone: str | None = Field(default=None, max_length=50)
     is_primary: bool | None = None
     is_active: bool | None = None
+
+    @model_validator(mode="after")
+    def required_fields_cannot_be_null(self) -> Self:
+        required = {"full_name", "is_primary", "is_active"}
+        invalid = sorted(
+            field
+            for field in required.intersection(self.model_fields_set)
+            if getattr(self, field) is None
+        )
+        if invalid:
+            raise ValueError(f"Fields cannot be null: {', '.join(invalid)}")
+        return self
 
 
 class AddressCreate(BaseModel):
@@ -79,3 +110,15 @@ class AddressUpdate(BaseModel):
     postal_code: str | None = Field(default=None, max_length=20)
     is_primary: bool | None = None
     is_active: bool | None = None
+
+    @model_validator(mode="after")
+    def required_fields_cannot_be_null(self) -> Self:
+        required = {"label", "address_type", "is_primary", "is_active"}
+        invalid = sorted(
+            field
+            for field in required.intersection(self.model_fields_set)
+            if getattr(self, field) is None
+        )
+        if invalid:
+            raise ValueError(f"Fields cannot be null: {', '.join(invalid)}")
+        return self
